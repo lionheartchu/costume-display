@@ -812,6 +812,9 @@ function displayFinalResults(surveyResults) {
     const subtitle = document.getElementById('accessoryStatusSubtitle');
     const panelContainer = document.querySelector('.panel-container');
     
+    // Set a flag to indicate we're in final results mode
+    document.body.setAttribute('data-final-results', 'true');
+    
     // Update the panel title
     dataTypeName.textContent = "Digital Privacy Complete!";
     
@@ -878,20 +881,11 @@ function displayFinalResults(surveyResults) {
     // Inject into the graph area
     graphPlaceholder.innerHTML = resultsHTML;
     
-    // Update the bottom description - remove stage descriptions
-    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
-    if (bottomDescription) {
-        // Remove any text about stages and replace with final summary
-        if (averageScore >= 90) {
-            bottomDescription.textContent = "Amazing work! Your digital privacy protection is exceptional!";
-        } else if (averageScore >= 70) {
-            bottomDescription.textContent = "Great job! You've built strong digital privacy protection.";
-        } else if (averageScore >= 50) {
-            bottomDescription.textContent = "Good start! Your digital privacy costume is taking shape.";
-        } else {
-            bottomDescription.textContent = "You've begun your digital privacy journey. Keep learning!";
-        }
-    }
+    // FIX 1: Remove bottom descriptions completely by hiding the element
+    const smallDescriptions = document.querySelectorAll('.small-description');
+    smallDescriptions.forEach(desc => {
+        desc.style.display = 'none';
+    });
     
     // Update the result number and progress bar with the average
     const resultNumber = document.querySelector('.result-number');
@@ -900,10 +894,26 @@ function displayFinalResults(surveyResults) {
     if (resultNumber) resultNumber.textContent = averageScore.toFixed(1);
     if (progressFill) progressFill.style.width = `${averageScore}%`;
     
-    // Add styles for the enhanced final results display
+    // Store the average score in an attribute to prevent hover issues
+    if (resultNumber) resultNumber.setAttribute('data-final-score', averageScore.toFixed(1));
+    
+    // FIX 2: Disable hover effects that change the progress bar
     const style = document.createElement('style');
     style.id = 'final-results-styles';
     style.textContent = `
+        /* Disable hover effects when in final results mode */
+        body[data-final-results="true"] .accessory:hover {
+            cursor: default !important;
+        }
+        
+        /* Make sure hover doesn't change the progress display */
+        body[data-final-results="true"] .accessory:hover ~ .panel-container .result-number,
+        body[data-final-results="true"] .accessory:hover ~ .panel-container .progress-fill {
+            /* These will override any hover effects */
+            content: attr(data-final-score) !important;
+            width: attr(data-width) !important;
+        }
+        
         /* Neutral sci-fi styling for final results panel */
         .final-results-panel {
             background: rgba(15, 25, 50, 0.85) !important;
@@ -991,6 +1001,11 @@ function displayFinalResults(surveyResults) {
                 0 0 20px rgba(0, 240, 255, 0.5);
         }
         
+        /* Hide small descriptions in final results mode */
+        body[data-final-results="true"] .small-description {
+            display: none !important;
+        }
+        
         /* Scroll hint at the top with better styling */
         .scroll-hint {
             text-align: center;
@@ -1047,6 +1062,18 @@ function displayFinalResults(surveyResults) {
     
     // Add new styles
     document.head.appendChild(style);
+    
+    // FIX 2: Override the hover behavior for accessories
+    const accessories = document.querySelectorAll('.accessory');
+    accessories.forEach(accessory => {
+        // Disable hover behavior by removing any hover event listeners
+        accessory.style.pointerEvents = 'none';
+    });
+    
+    // Store the final progress width as an attribute to restore after hover
+    if (progressFill) {
+        progressFill.setAttribute('data-width', `${averageScore}%`);
+    }
 }
 
 // Clean up message listener - remove console logs
