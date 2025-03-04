@@ -314,134 +314,129 @@ const dataTypeToAccessory = {
     "Biometric Data": "bio"
 };
 
-// Function to reveal garment with improved hover behavior
+// Function to reveal garments as questions are completed
 function revealGarment(questionIndex, score, dataType) {
-    // Check if we have a costume for this data type
+    // Get data type for this question if not provided
     const dataTypeToReveal = dataType || getDataTypeForQuestion(questionIndex);
     const accessoryIdToReveal = dataTypeToAccessory[dataTypeToReveal];
     
+    // Check if we have a matching accessory
     if (!accessoryIdToReveal) {
-        return; // No matching accessory found
+        return;
     }
     
-    // Find the corresponding costume accessory
+    // Find the costume piece
     const accessory = document.getElementById(accessoryIdToReveal);
     if (!accessory) {
-        return; // Accessory element not found
+        return;
     }
     
-    // Calculate the stage based on score (1-4)
+    // RESTORE ORIGINAL FUNCTIONALITY
+    // Calculate stage based on score (1-4)
     let stage = 1;
-    if (score <= 25) stage = 1;
-    else if (score <= 50) stage = 2;
-    else if (score <= 75) stage = 3;
-    else stage = 4;
+    let percentage = score;
     
-    // Store the actual score value as a data attribute
-    accessory.setAttribute('data-score', score);
-    
-    // Update to show corresponding image
-    const currentImage = accessory.querySelector(`img:nth-child(${stage})`);
-    if (currentImage) {
-        // Hide all images first
-        accessory.querySelectorAll('img').forEach(img => {
-            img.style.opacity = 0;
-        });
-        
-        // Show only the current stage image
-        currentImage.style.opacity = 1;
+    if (score <= 25) {
+        stage = 1;
+    } else if (score <= 50) {
+        stage = 2;
+    } else if (score <= 75) {
+        stage = 3;
+    } else {
+        stage = 4;
     }
+    
+    // Store the actual score as data attribute for hover use
+    accessory.setAttribute('data-score', percentage);
+    
+    // Update images
+    const images = accessory.querySelectorAll('img');
+    images.forEach((img, index) => {
+        img.style.opacity = (index + 1 === stage) ? 1 : 0;
+    });
     
     // Update accessory data
     accessory.setAttribute('data-stage', stage);
     accessory.setAttribute('data-revealed', 'true');
     
-    // Setup hover behavior that uses actual score instead of fixed values
-    setupAccessoryHover(accessory, accessoryIdToReveal, dataTypeToReveal, score);
+    // Update the panel if this is the most recent question
+    updatePanelForAccessory(accessoryIdToReveal, dataTypeToReveal, stage, percentage);
 }
 
-// New function to set up proper hover behavior with real scores
-function setupAccessoryHover(accessory, accessoryId, dataType, actualScore) {
-    accessory.onmouseenter = function() {
-        updateInfoPanel(accessoryId, dataType, accessory.getAttribute('data-stage'), actualScore);
-    };
-    
-    accessory.onmouseleave = function() {
-        // Reset to default/latest panel display
-        resetInfoPanel();
-    };
-}
-
-// Update the panel with more precise values
-function updateInfoPanel(accessoryId, dataType, stage, actualScore) {
-    const dataTypeElement = document.getElementById('dataTypeName');
-    const subtitleElement = document.getElementById('accessoryStatusSubtitle');
-    const graphPlaceholder = document.querySelector('.graph-placeholder');
+// Helper function to update panel (only the most recent update)
+function updatePanelForAccessory(accessoryId, dataType, stage, percentage) {
+    // Update panel elements
+    const dataTypeName = document.getElementById('dataTypeName');
+    const accessoryStatusSubtitle = document.getElementById('accessoryStatusSubtitle');
     const resultNumber = document.querySelector('.result-number');
     const progressFill = document.querySelector('.progress-fill');
+    
+    // Set data type name
+    if (dataTypeName) {
+        dataTypeName.textContent = dataType;
+    }
+    
+    // Set status subtitle based on stage
+    if (accessoryStatusSubtitle) {
+        const stageTexts = [
+            "Needs Protection", 
+            "Basic Protection", 
+            "Strong Protection", 
+            "Maximum Protection"
+        ];
+        accessoryStatusSubtitle.textContent = stageTexts[stage - 1];
+    }
+    
+    // Update result number and progress bar
+    if (resultNumber) {
+        resultNumber.textContent = percentage.toFixed(1);
+        // Store the current value to restore after hover
+        resultNumber.setAttribute('data-current-value', percentage.toFixed(1));
+    }
+    
+    if (progressFill) {
+        progressFill.style.width = `${percentage}%`;
+        // Store the current width to restore after hover
+        progressFill.setAttribute('data-current-width', `${percentage}%`);
+    }
+    
+    // Update panel style based on stage
     const panel = document.querySelector('.panel-container');
-    
-    // Only proceed if we have all elements
-    if (!dataTypeElement || !subtitleElement || !graphPlaceholder || !resultNumber || !progressFill || !panel) {
-        return;
+    if (panel) {
+        panel.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
+        
+        const stateClasses = ['warning-state', 'caution-state', 'secure-state', 'optimal-state'];
+        panel.classList.add(stateClasses[stage - 1]);
     }
     
-    // Update the title and subtitle
-    dataTypeElement.textContent = dataType;
-    
-    // Set accessory status subtitle based on stage
-    const stageTexts = [
-        "Needs Protection", 
-        "Basic Protection", 
-        "Strong Protection", 
-        "Maximum Protection"
-    ];
-    
-    // Update subtitle with stage text
-    subtitleElement.textContent = stageTexts[parseInt(stage) - 1] || "Unknown Status";
-    
-    // Remove previous state classes from panel
-    panel.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
-    
-    // Add appropriate state class based on stage
-    const stateClasses = ['warning-state', 'caution-state', 'secure-state', 'optimal-state'];
-    const stateClass = stateClasses[parseInt(stage) - 1] || '';
-    if (stateClass) {
-        panel.classList.add(stateClass);
+    // Update graph style
+    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    if (graphPlaceholder) {
+        graphPlaceholder.classList.remove('graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal');
+        
+        const graphClasses = ['graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal'];
+        graphPlaceholder.classList.add(graphClasses[stage - 1]);
     }
     
-    // Remove previous stage classes from graph placeholder
-    graphPlaceholder.classList.remove('graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal');
-    
-    // Add appropriate graph class based on stage
-    const graphClasses = ['graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal'];
-    const graphClass = graphClasses[parseInt(stage) - 1] || '';
-    if (graphClass) {
-        graphPlaceholder.classList.add(graphClass);
-    }
-    
-    // Update the progress display with the ACTUAL score (not fixed values)
-    resultNumber.textContent = actualScore.toFixed(1);
-    progressFill.style.width = `${actualScore}%`;
-    
-    // Update the bottom description based on stage
+    // Update bottom description
     const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
     if (bottomDescription) {
-        const descriptions = [
-            "Looks like this needs some attention!",
-            "Getting better! Some protection in place.",
-            "Great progress! Strong protection active.",
-            "Amazing! You've maximized your protection."
-        ];
-        bottomDescription.textContent = descriptions[parseInt(stage) - 1] || "";
+        const pointsRemaining = Math.ceil(100 - percentage);
+        
+        if (percentage < 100) {
+            bottomDescription.textContent = `Just ${pointsRemaining} more points and your ${accessoryId} will be fully protected!`;
+        } else {
+            bottomDescription.textContent = `Fantastic! Your ${accessoryId} has complete protection!`;
+        }
     }
 }
 
-// Function to reset the panel to default state or most recent data
-function resetInfoPanel() {
-    // Implementation depends on your desired default behavior
-    // Could reset to the last answered question's data
-    // or show an overall summary
+// Function to map score to stage
+function mapScoreToStage(score) {
+    if (score <= 25) return 1;        // Warning state (0-25)
+    else if (score <= 50) return 2;   // Caution state (26-50)
+    else if (score <= 75) return 3;   // Secure state (51-75)
+    else return 4;                    // Optimal state (76-100)
 }
 
 // Function to process the complete survey data
@@ -954,11 +949,20 @@ function displayFinalResults(surveyResults) {
     // Inject into the graph area
     graphPlaceholder.innerHTML = resultsHTML;
     
-    // FIX 1: Remove bottom descriptions completely by hiding the element
-    const smallDescriptions = document.querySelectorAll('.small-description');
-    smallDescriptions.forEach(desc => {
-        desc.style.display = 'none';
-    });
+    // Update the bottom description - remove stage descriptions
+    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
+    if (bottomDescription) {
+        // Remove any text about stages and replace with final summary
+        if (averageScore >= 90) {
+            bottomDescription.textContent = "Amazing work! Your digital privacy protection is exceptional!";
+        } else if (averageScore >= 70) {
+            bottomDescription.textContent = "Great job! You've built strong digital privacy protection.";
+        } else if (averageScore >= 50) {
+            bottomDescription.textContent = "Good start! Your digital privacy costume is taking shape.";
+        } else {
+            bottomDescription.textContent = "You've begun your digital privacy journey. Keep learning!";
+        }
+    }
     
     // Update the result number and progress bar with the average
     const resultNumber = document.querySelector('.result-number');
@@ -967,26 +971,10 @@ function displayFinalResults(surveyResults) {
     if (resultNumber) resultNumber.textContent = averageScore.toFixed(1);
     if (progressFill) progressFill.style.width = `${averageScore}%`;
     
-    // Store the average score in an attribute to prevent hover issues
-    if (resultNumber) resultNumber.setAttribute('data-final-score', averageScore.toFixed(1));
-    
-    // FIX 2: Disable hover effects that change the progress bar
+    // Add styles for the enhanced final results display
     const style = document.createElement('style');
     style.id = 'final-results-styles';
     style.textContent = `
-        /* Disable hover effects when in final results mode */
-        body[data-final-results="true"] .accessory:hover {
-            cursor: default !important;
-        }
-        
-        /* Make sure hover doesn't change the progress display */
-        body[data-final-results="true"] .accessory:hover ~ .panel-container .result-number,
-        body[data-final-results="true"] .accessory:hover ~ .panel-container .progress-fill {
-            /* These will override any hover effects */
-            content: attr(data-final-score) !important;
-            width: attr(data-width) !important;
-        }
-        
         /* Neutral sci-fi styling for final results panel */
         .final-results-panel {
             background: rgba(15, 25, 50, 0.85) !important;
@@ -1074,11 +1062,6 @@ function displayFinalResults(surveyResults) {
                 0 0 20px rgba(0, 240, 255, 0.5);
         }
         
-        /* Hide small descriptions in final results mode */
-        body[data-final-results="true"] .small-description {
-            display: none !important;
-        }
-        
         /* Scroll hint at the top with better styling */
         .scroll-hint {
             text-align: center;
@@ -1135,18 +1118,6 @@ function displayFinalResults(surveyResults) {
     
     // Add new styles
     document.head.appendChild(style);
-    
-    // FIX 2: Override the hover behavior for accessories
-    const accessories = document.querySelectorAll('.accessory');
-    accessories.forEach(accessory => {
-        // Disable hover behavior by removing any hover event listeners
-        accessory.style.pointerEvents = 'none';
-    });
-    
-    // Store the final progress width as an attribute to restore after hover
-    if (progressFill) {
-        progressFill.setAttribute('data-width', `${averageScore}%`);
-    }
 }
 
 // Clean up message listener - remove console logs
@@ -1175,4 +1146,36 @@ document.addEventListener('DOMContentLoaded', function() {
             // Silently handle error - removed console.error
         }
     }
+});
+
+// Add a style fix for the hover values issue without changing hover behavior
+document.addEventListener('DOMContentLoaded', function() {
+    // Add a style rule to fix hover behavior when in final results mode
+    const hoverFixStyle = document.createElement('style');
+    hoverFixStyle.id = 'hover-fix-style';
+    hoverFixStyle.textContent = `
+        /* Only apply in non-final-results mode */
+        body:not([data-final-results="true"]) .accessory:hover ~ .panel-container .result-number::after {
+            content: attr(data-hover-value);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Store original widths during hover */
+        body:not([data-final-results="true"]) .progress-fill[data-current-width] {
+            transition: width 0.3s ease;
+        }
+        
+        /* When hovering over accessories, restore width when leaving */
+        body:not([data-final-results="true"]) .accessory:not(:hover) ~ .panel-container .progress-fill[data-current-width] {
+            width: attr(data-current-width);
+        }
+    `;
+    document.head.appendChild(hoverFixStyle);
 });
