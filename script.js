@@ -11,7 +11,7 @@ window.addEventListener('message', function(event) {
         
         if (event.data.type === 'questionCompleted') {
             console.log("Question completed data received:", event.data);
-            revealGarment(event.data.questionIndex, event.data.score);
+            revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
         } else if (event.data.type === 'surveyResults') {
             console.log("Survey results received:", event.data);
             processSurveyData(event.data);
@@ -37,7 +37,7 @@ window.addEventListener('message', function(event) {
     
     // Process individual question completion (new functionality)
     if (event.data.type === 'questionCompleted') {
-        revealGarment(event.data.questionIndex, event.data.score);
+        revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
     }
     
     // Process the garment update
@@ -314,61 +314,134 @@ const dataTypeToAccessory = {
     "Biometric Data": "bio"
 };
 
-// Function to reveal garments as questions are completed
-function revealGarment(questionIndex, score) {
-    console.log(`Revealing garment for question ${questionIndex} with score ${score}`);
+// Function to reveal garment with improved hover behavior
+function revealGarment(questionIndex, score, dataType) {
+    // Check if we have a costume for this data type
+    const dataTypeToReveal = dataType || getDataTypeForQuestion(questionIndex);
+    const accessoryIdToReveal = dataTypeToAccessory[dataTypeToReveal];
     
-    // Get the data type from Site A's questions array equivalent
-    let dataType = null;
-    
-    // If we have the direct dataType from message
-    if (typeof questionIndex === 'object' && questionIndex.dataType) {
-        dataType = questionIndex.dataType;
-        score = questionIndex.score;
-    } 
-    // If we just have question index, use hardcoded mapping based on index
-    else {
-        // Hardcoded mapping based on your Site A question order
-        const dataTypes = [
-            "Visual Data",        // Q1: When posting personal photos...
-            "Communication Data", // Q2: When sending personal messages...
-            "Personal Data",      // Q3: When creating personal profiles...
-            "Cognitive Data",     // Q4: When apps analyze your data...
-            "Audio Data",         // Q5: When using voice assistants...
-            "Geolocation Data",   // Q6: When using apps that track locations...
-            "Biometric Data"      // Q7: When using biometric login...
-        ];
-        
-        dataType = dataTypes[questionIndex];
+    if (!accessoryIdToReveal) {
+        return; // No matching accessory found
     }
     
-    // Map data type to accessory
-    const accessoryId = dataTypeToAccessory[dataType];
+    // Find the corresponding costume accessory
+    const accessory = document.getElementById(accessoryIdToReveal);
+    if (!accessory) {
+        return; // Accessory element not found
+    }
     
-    if (!accessoryId) {
-        console.error(`No accessory mapped for data type: ${dataType}`);
+    // Calculate the stage based on score (1-4)
+    let stage = 1;
+    if (score <= 25) stage = 1;
+    else if (score <= 50) stage = 2;
+    else if (score <= 75) stage = 3;
+    else stage = 4;
+    
+    // Store the actual score value as a data attribute
+    accessory.setAttribute('data-score', score);
+    
+    // Update to show corresponding image
+    const currentImage = accessory.querySelector(`img:nth-child(${stage})`);
+    if (currentImage) {
+        // Hide all images first
+        accessory.querySelectorAll('img').forEach(img => {
+            img.style.opacity = 0;
+        });
+        
+        // Show only the current stage image
+        currentImage.style.opacity = 1;
+    }
+    
+    // Update accessory data
+    accessory.setAttribute('data-stage', stage);
+    accessory.setAttribute('data-revealed', 'true');
+    
+    // Setup hover behavior that uses actual score instead of fixed values
+    setupAccessoryHover(accessory, accessoryIdToReveal, dataTypeToReveal, score);
+}
+
+// New function to set up proper hover behavior with real scores
+function setupAccessoryHover(accessory, accessoryId, dataType, actualScore) {
+    accessory.onmouseenter = function() {
+        updateInfoPanel(accessoryId, dataType, accessory.getAttribute('data-stage'), actualScore);
+    };
+    
+    accessory.onmouseleave = function() {
+        // Reset to default/latest panel display
+        resetInfoPanel();
+    };
+}
+
+// Update the panel with more precise values
+function updateInfoPanel(accessoryId, dataType, stage, actualScore) {
+    const dataTypeElement = document.getElementById('dataTypeName');
+    const subtitleElement = document.getElementById('accessoryStatusSubtitle');
+    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    const resultNumber = document.querySelector('.result-number');
+    const progressFill = document.querySelector('.progress-fill');
+    const panel = document.querySelector('.panel-container');
+    
+    // Only proceed if we have all elements
+    if (!dataTypeElement || !subtitleElement || !graphPlaceholder || !resultNumber || !progressFill || !panel) {
         return;
     }
     
-    console.log(`Mapped data type ${dataType} to accessory ${accessoryId}`);
+    // Update the title and subtitle
+    dataTypeElement.textContent = dataType;
     
-    // Calculate stage based on score
-    const stage = mapScoreToStage(score);
-    console.log(`Calculated stage ${stage} for score ${score}`);
+    // Set accessory status subtitle based on stage
+    const stageTexts = [
+        "Needs Protection", 
+        "Basic Protection", 
+        "Strong Protection", 
+        "Maximum Protection"
+    ];
     
-    // Update the garment
-    updateGarment(accessoryId, stage, score, dataType);
+    // Update subtitle with stage text
+    subtitleElement.textContent = stageTexts[parseInt(stage) - 1] || "Unknown Status";
     
-    // Show a message to user
-    showConnectionMessage(`Updated ${accessoryId} to stage ${stage}`);
+    // Remove previous state classes from panel
+    panel.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
+    
+    // Add appropriate state class based on stage
+    const stateClasses = ['warning-state', 'caution-state', 'secure-state', 'optimal-state'];
+    const stateClass = stateClasses[parseInt(stage) - 1] || '';
+    if (stateClass) {
+        panel.classList.add(stateClass);
+    }
+    
+    // Remove previous stage classes from graph placeholder
+    graphPlaceholder.classList.remove('graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal');
+    
+    // Add appropriate graph class based on stage
+    const graphClasses = ['graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal'];
+    const graphClass = graphClasses[parseInt(stage) - 1] || '';
+    if (graphClass) {
+        graphPlaceholder.classList.add(graphClass);
+    }
+    
+    // Update the progress display with the ACTUAL score (not fixed values)
+    resultNumber.textContent = actualScore.toFixed(1);
+    progressFill.style.width = `${actualScore}%`;
+    
+    // Update the bottom description based on stage
+    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
+    if (bottomDescription) {
+        const descriptions = [
+            "Looks like this needs some attention!",
+            "Getting better! Some protection in place.",
+            "Great progress! Strong protection active.",
+            "Amazing! You've maximized your protection."
+        ];
+        bottomDescription.textContent = descriptions[parseInt(stage) - 1] || "";
+    }
 }
 
-// Function to map score to stage
-function mapScoreToStage(score) {
-    if (score <= 25) return 1;        // Warning state (0-25)
-    else if (score <= 50) return 2;   // Caution state (26-50)
-    else if (score <= 75) return 3;   // Secure state (51-75)
-    else return 4;                    // Optimal state (76-100)
+// Function to reset the panel to default state or most recent data
+function resetInfoPanel() {
+    // Implementation depends on your desired default behavior
+    // Could reset to the last answered question's data
+    // or show an overall summary
 }
 
 // Function to process the complete survey data
