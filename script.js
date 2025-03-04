@@ -22,41 +22,6 @@ window.addEventListener('message', function(event) {
     }
 }, false);
 
-// Add this code to test the communication
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("COSTUME SITE LOADED - TESTING COMMUNICATIONS");
-    
-    // Add a test button to verify functionality
-    const testButton = document.createElement('button');
-    testButton.textContent = 'Test Garment Display';
-    testButton.style.cssText = `
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        background: rgba(0, 240, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(0, 255, 240, 0.8);
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 1000;
-    `;
-    
-    // Test button will show a random garment when clicked
-    testButton.onclick = function() {
-        const accessoryKeys = Object.keys(accessories);
-        const randomAccessory = accessoryKeys[Math.floor(Math.random() * accessoryKeys.length)];
-        const randomStage = Math.floor(Math.random() * 4) + 1;
-        
-        console.log(`Testing: Revealing ${randomAccessory} at stage ${randomStage}`);
-        updateGarment(randomAccessory, randomStage); // This should test your updateGarment function
-        
-        showConnectionMessage("Test garment displayed!");
-    };
-    
-    document.body.appendChild(testButton);
-});
-
 // Track current image number for each accessory
 // Listen for messages from Site A
 window.addEventListener('message', function(event) {
@@ -541,9 +506,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }, false);
 });
 
-// Simplified function to apply reasonable styling
+// Simplified function to apply styling with shorter panel
 function applyFuturisticStyles() {
-    console.log("Applying futuristic panel styles with moderate text sizes");
+    console.log("Applying futuristic panel styles with shorter panel");
     
     // Create a separate style element for our new styles
     const futuristicStyles = document.createElement('style');
@@ -561,14 +526,14 @@ function applyFuturisticStyles() {
             font-family: 'Courier New', monospace !important;
         }
         
-        /* Make panel lighter and more futuristic */
+        /* Make panel lighter, shorter, and more futuristic */
         .panel-container {
             background: rgba(15, 25, 50, 0.7) !important;
             border: 1px solid rgba(0, 240, 255, 0.3) !important;
             border-radius: 12px !important;
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
             padding: 15px 25px !important;
-            max-height: 420px !important;
+            max-height: 370px !important; /* SHORTER panel height */
             width: 380px !important;
             backdrop-filter: blur(10px) !important;
         }
@@ -586,7 +551,7 @@ function applyFuturisticStyles() {
         
         /* Enhanced data type title with moderate size */
         #dataTypeName {
-            font-size: 1.7em !important;
+            font-size: 1.6em !important;
             color: rgba(0, 240, 255, 1) !important;
             text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
             letter-spacing: 1px !important;
@@ -628,7 +593,7 @@ function applyFuturisticStyles() {
         
         /* Panel image styling */
         .panel-accessory-image {
-            max-height: 150px !important;
+            max-height: 130px !important; /* SMALLER to fit shorter panel */
             filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) !important;
         }
         
@@ -814,7 +779,7 @@ function fixCostumeDisplay() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log("COSTUME SITE LOADED - APPLYING FIXES");
     
-    // Apply styling with moderate text sizes
+    // Apply styling with moderate text sizes and shorter panel
     applyFuturisticStyles();
     
     // Fix costume display
