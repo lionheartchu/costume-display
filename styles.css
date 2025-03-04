@@ -1,0 +1,649 @@
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgb(4,12,36);
+}
+h2{
+    color:ghostwhite;
+}
+.main-container {
+    display: flex;
+    width: 82%;
+    max-width: 1200px;
+}
+
+.costume-display {
+    width: 50%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.body-image {
+    width: 42%;
+    max-width: 400px;
+    margin-left:-40%;
+    opacity: 0.5;
+}
+
+.accessory {
+    position: absolute;
+    width: 120px; /* Adjust size as needed */
+}
+#brain{
+    margin-top:-130%;
+    margin-left:-36%;
+    width:85px;
+    /* animation: glowLow 3s infinite;
+    opacity: 0.5; */
+    transition: opacity 0.2s ease-in-out;
+    cursor: pointer;
+}
+#eyes{
+    margin-top:-118%;
+    margin-left:-42%;
+    width:40px;
+    /* opacity:0.2; */
+}
+#ears{
+    margin-top:-110%;
+    margin-left:-26%;
+    width:16px;
+    /* opacity:0; */
+}
+#hands{
+    margin-top:15%;
+    margin-left:-40%;
+    width:275px;
+    /* opacity:0; */
+}
+#heart{
+    margin-top:-80%;
+    margin-left:-20%;
+    width:80px;
+    /* animation: glowHigh 1.5s infinite;
+    opacity: 1; */
+}
+#bio{
+    margin-top:-20%;
+    margin-left:-40%;
+    width:220px;
+    /* height:270px; */
+    /* opacity:0; */
+}
+.data-info {
+    width: 50%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+#feet{
+    margin-top:115%;
+    margin-left:-38%;
+    width:170px;  /* opacity:0; */
+}
+
+#dataTypeName {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+#dataDescription {
+    font-size: 1.1em;
+    color: #555;
+}
+
+@keyframes glowHigh {
+    0% {
+        filter: brightness(1.2);
+    }
+    50% {
+        filter: brightness(1.5);
+    }
+    100% {
+        filter: brightness(1.2);
+    }
+}
+
+@keyframes glowLow {
+    0% {
+        filter: brightness(0.8);
+    }
+    50% {
+        filter: brightness(1);
+    }
+    100% {
+        filter: brightness(0.8);
+    }
+}
+
+.sci-fi-panel {
+    padding: 4px;
+    background: linear-gradient(45deg, rgba(0,212,255,0.1) 0%, rgba(9,9,121,0.1) 100%);
+    backdrop-filter: blur(5px);
+}
+
+.glow-border {
+    position: relative;
+    border: 2px solid rgba(0, 195, 255, 0.5);
+}
+
+.glow-border::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: 
+        inset 0 0 20px rgba(0, 195, 255, 0.3),
+        0 0 15px rgba(0, 195, 255, 0.5);
+    pointer-events: none;
+}
+
+.panel-content {
+    padding: 30px;
+    background: rgba(16, 24, 39, 0.8);
+    color: #fff;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+    min-height: 600px;
+}
+
+.panel-content h2 {
+    color: #00c3ff;
+    margin-top: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+}
+
+.panel-content p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+}
+
+.panel-section {
+    margin-bottom: 40px;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9em;
+    margin: 0;
+}
+
+.section-divider {
+    height: 1px;
+    background: linear-gradient(to right, 
+        rgba(0, 195, 255, 0.1), 
+        rgba(0, 195, 255, 0.5) 50%, 
+        rgba(0, 195, 255, 0.1)
+    );
+    margin: 20px 0;
+}
+
+.graph-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.graph-placeholder {
+    width: 100%;
+    height: 200px;
+    border: 1px solid rgba(0, 195, 255, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgba(0, 195, 255, 0.5);
+    margin: 20px 0;
+    background: rgba(0, 30, 60, 0.3);
+}
+
+.small-description {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 10px 0;
+    text-align: left;
+}
+
+.result-container {
+    margin: 20px 0;
+}
+
+.result-header {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+
+.result-number {
+    font-size: 2.5em;
+    color: #00c3ff;
+    font-weight: bold;
+}
+
+.result-unit {
+    margin-left: 8px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    /* border-radius: 5px; */
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(to right, #00c3ff, #0066ff);
+    transition: width 1s ease-in-out;
+}
+
+/* Warning state effect for accessories */
+.warning-state {
+    filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8));
+    animation: warning-flicker 2s infinite;
+}
+
+@keyframes warning-flicker {
+    0% {
+        filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8));
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+    10% {
+        opacity: 0.7;
+    }
+    15% {
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.9));
+        transform: translate(0.3px, -0.3px);
+        opacity: 0.95;
+    }
+    25% {
+        opacity: 0.8;
+    }
+    40% {
+        filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.7));
+        transform: translate(0.4px, -0.2px);
+        opacity: 0.6;
+    }
+    45% {
+        opacity: 0.95;
+    }
+    60% {
+        filter: drop-shadow(0 0 18px rgba(255, 0, 0, 1));
+        transform: translate(-0.3px, 0);
+        opacity: 0.85;
+    }
+    65% {
+        opacity: 0.5;
+    }
+    70% {
+        filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.75));
+        transform: translate(0.2px, 0.2px);
+        opacity: 0.95;
+    }
+    80% {
+        filter: drop-shadow(0 0 14px rgba(255, 0, 0, 0.9));
+        transform: translate(0.4px, 0.3px);
+        opacity: 0.7;
+    }
+    85% {
+        opacity: 0.9;
+    }
+    95% {
+        opacity: 0.6;
+    }
+    100% {
+        filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.8));
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+}
+
+/* For displaying accessory images in the panel */
+.panel-accessory-image {
+    max-width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+    filter: brightness(1.2) drop-shadow(0 0 10px rgba(0, 195, 255, 0.5));
+}
+
+/* Warning state for panel images */
+.panel-warning-state {
+    filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.9)) brightness(1.3) !important;
+    animation: panel-warning-flicker 2s infinite;
+}
+
+.graph-warning {
+    border: 1px solid rgba(255, 50, 50, 0.8) !important;
+    background: rgba(90, 0, 0, 0.4) !important;
+    box-shadow: 
+        inset 0 0 25px rgba(255, 0, 0, 0.3),
+        0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+@keyframes panel-warning-flicker {
+    0% {
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.9)) brightness(1.3);
+        opacity: 1;
+        transform: scale(1);
+    }
+    25% {
+        filter: drop-shadow(0 0 20px rgba(255, 30, 0, 1)) brightness(1.5);
+        opacity: 0.9;
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.8)) brightness(1.2);
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+    75% {
+        filter: drop-shadow(0 0 18px rgba(255, 20, 0, 0.95)) brightness(1.4);
+        opacity: 0.95;
+    }
+    100% {
+        filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.9)) brightness(1.3);
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Medium-low caution effect for stage 2 - futuristic electric yellow */
+.caution-state {
+    filter: drop-shadow(0 0 8px rgba(255, 240, 0, 0.6));
+    animation: caution-glow 2.5s infinite;
+}
+
+@keyframes caution-glow {
+    0% {
+        filter: drop-shadow(0 0 8px rgba(255, 240, 0, 0.5));
+        opacity: 0.92;
+    }
+    40% {
+        filter: drop-shadow(0 0 14px rgba(255, 255, 40, 0.8));
+        opacity: 1;
+        transform: scale(1.01);
+    }
+    60% {
+        filter: drop-shadow(0 0 8px rgba(255, 240, 0, 0.5));
+        opacity: 0.92;
+        transform: scale(1);
+    }
+    100% {
+        filter: drop-shadow(0 0 8px rgba(255, 240, 0, 0.5));
+        opacity: 0.92;
+    }
+}
+
+/* Panel version of caution state */
+.panel-caution-state {
+    filter: drop-shadow(0 0 12px rgba(255, 240, 0, 0.6)) brightness(1.1) !important;
+    animation: panel-caution-glow 2.5s infinite;
+}
+
+.graph-caution {
+    border: 1px solid rgba(255, 240, 26, 0.7) !important;
+    background: rgba(40, 30, 0, 0.2) !important;
+    box-shadow: 
+        inset 0 0 20px rgba(255, 240, 0, 0.2),
+        0 0 10px rgba(255, 240, 0, 0.2);
+}
+
+@keyframes panel-caution-glow {
+    0% {
+        filter: drop-shadow(0 0 12px rgba(255, 240, 0, 0.5)) brightness(1.1);
+        opacity: 0.95;
+    }
+    45% {
+        filter: drop-shadow(0 0 18px rgba(255, 255, 40, 0.7)) brightness(1.3);
+        opacity: 1;
+        transform: scale(1.02);
+    }
+    70% {
+        filter: drop-shadow(0 0 12px rgba(255, 240, 0, 0.5)) brightness(1.1);
+        opacity: 0.95;
+        transform: scale(1);
+    }
+    100% {
+        filter: drop-shadow(0 0 12px rgba(255, 240, 0, 0.5)) brightness(1.1);
+        opacity: 0.95;
+    }
+}
+
+/* Medium-high security effect for stage 3 - cyan/blue */
+.secure-state {
+    filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.8));
+    animation: secure-glow 4s infinite;
+}
+
+@keyframes secure-glow {
+    0% {
+        filter: drop-shadow(0 0 8px rgba(0, 200, 255, 0.8));
+        transform: scale(1);
+    }
+    30% {
+        filter: drop-shadow(0 0 6px rgba(0, 200, 255, 0.6));
+    }
+    40% {
+        filter: drop-shadow(0 0 12px rgba(0, 230, 255, 1));
+        transform: scale(1.01);
+    }
+    50% {
+        filter: drop-shadow(0 0 8px rgba(0, 200, 255, 0.8));
+        transform: scale(1);
+    }
+    80% {
+        filter: drop-shadow(0 0 6px rgba(0, 200, 255, 0.6));
+    }
+    90% {
+        filter: drop-shadow(0 0 14px rgba(0, 230, 255, 1));
+        transform: scale(1.01);
+    }
+    100% {
+        filter: drop-shadow(0 0 8px rgba(0, 200, 255, 0.8));
+        transform: scale(1);
+    }
+}
+
+/* Panel version of secure state */
+.panel-secure-state {
+    filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.7)) brightness(1.2) !important;
+    animation: panel-secure-glow 4s infinite;
+}
+
+.graph-secure {
+    border: 1px solid rgba(0, 220, 255, 0.7) !important;
+    background: rgba(0, 50, 80, 0.25) !important;
+    box-shadow: 
+        inset 0 0 25px rgba(0, 200, 255, 0.25),
+        0 0 15px rgba(0, 200, 255, 0.3);
+}
+
+@keyframes panel-secure-glow {
+    0% {
+        filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.7)) brightness(1.1);
+        transform: scale(1);
+    }
+    35% {
+        filter: drop-shadow(0 0 8px rgba(0, 200, 255, 0.6)) brightness(1.05);
+    }
+    45% {
+        filter: drop-shadow(0 0 20px rgba(60, 230, 255, 0.8)) brightness(1.3);
+        transform: scale(1.02);
+    }
+    55% {
+        filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.7)) brightness(1.1);
+        transform: scale(1);
+    }
+    85% {
+        filter: drop-shadow(0 0 8px rgba(0, 200, 255, 0.6)) brightness(1.05);
+    }
+    90% {
+        filter: drop-shadow(0 0 22px rgba(60, 230, 255, 0.9)) brightness(1.4);
+        transform: scale(1.03);
+    }
+    100% {
+        filter: drop-shadow(0 0 12px rgba(0, 200, 255, 0.7)) brightness(1.1);
+        transform: scale(1);
+    }
+}
+
+/* Maximum protection effect for stage 4 - futuristic electric cyan */
+.optimal-state {
+    filter: drop-shadow(0 0 15px rgba(0, 255, 240, 0.8));
+    animation: optimal-glow 3s infinite;
+}
+
+@keyframes optimal-glow {
+    0% {
+        filter: drop-shadow(0 0 10px rgba(0, 255, 240, 0.8));
+        transform: scale(1);
+    }
+    20% {
+        filter: drop-shadow(0 0 10px rgba(0, 255, 240, 0.7)) 
+               drop-shadow(0 0 16px rgba(0, 220, 255, 0.3));
+    }
+    40% {
+        filter: drop-shadow(0 0 16px rgba(100, 255, 255, 1)) 
+               drop-shadow(0 0 24px rgba(0, 230, 255, 0.5));
+        transform: scale(1.03);
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(0, 255, 240, 0.9)) 
+               drop-shadow(0 0 20px rgba(0, 230, 255, 0.4));
+        transform: scale(1.015);
+    }
+    70% {
+        filter: drop-shadow(0 0 10px rgba(0, 255, 240, 0.7)) 
+               drop-shadow(0 0 16px rgba(0, 230, 255, 0.3));
+        transform: scale(1);
+    }
+    85% {
+        filter: drop-shadow(0 0 18px rgba(150, 255, 255, 1)) 
+               drop-shadow(0 0 26px rgba(0, 240, 255, 0.6));
+        transform: scale(1.04);
+    }
+    100% {
+        filter: drop-shadow(0 0 10px rgba(0, 255, 240, 0.8));
+        transform: scale(1);
+    }
+}
+
+/* Panel version of optimal state */
+.panel-optimal-state {
+    filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.9)) brightness(1.4) !important;
+    animation: panel-optimal-glow 3s infinite;
+}
+
+.graph-optimal {
+    border: 2px solid rgba(0, 255, 240, 0.8) !important;
+    background: rgba(0, 80, 95, 0.3) !important;
+    box-shadow: 
+        inset 0 0 35px rgba(0, 255, 240, 0.4),
+        0 0 25px rgba(0, 255, 240, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.graph-optimal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        rgba(0, 255, 255, 0) 0%,
+        rgba(0, 255, 255, 0.1) 47%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(0, 255, 255, 0.1) 53%,
+        rgba(0, 255, 255, 0) 100%
+    );
+    transform: skewX(-20deg);
+    animation: optimal-scan 4s infinite;
+    pointer-events: none;
+}
+
+.graph-optimal::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 255, 240, 0.15) 0%, rgba(0, 255, 240, 0) 70%);
+    animation: optimal-pulse 3s infinite;
+    pointer-events: none;
+}
+
+@keyframes optimal-scan {
+    0% {
+        left: -150%;
+    }
+    40%, 100% {
+        left: 150%;
+    }
+}
+
+@keyframes optimal-pulse {
+    0% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+}
+
+@keyframes panel-optimal-glow {
+    0% {
+        filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.8)) brightness(1.3);
+        transform: scale(1);
+    }
+    25% {
+        filter: drop-shadow(0 0 15px rgba(0, 255, 240, 0.7)) brightness(1.2)
+               drop-shadow(0 0 30px rgba(0, 230, 255, 0.3));
+    }
+    40% {
+        filter: drop-shadow(0 0 35px rgba(100, 255, 255, 1)) brightness(1.6)
+               drop-shadow(0 0 45px rgba(0, 240, 255, 0.5));
+        transform: scale(1.07);
+    }
+    55% {
+        filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.9)) brightness(1.4)
+               drop-shadow(0 0 30px rgba(0, 240, 255, 0.4));
+        transform: scale(1.03);
+    }
+    75% {
+        filter: drop-shadow(0 0 15px rgba(0, 255, 240, 0.7)) brightness(1.2)
+               drop-shadow(0 0 30px rgba(0, 230, 255, 0.3));
+        transform: scale(1);
+    }
+    90% {
+        filter: drop-shadow(0 0 40px rgba(150, 255, 255, 1)) brightness(1.7)
+               drop-shadow(0 0 50px rgba(0, 240, 255, 0.6));
+        transform: scale(1.08);
+    }
+    100% {
+        filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.8)) brightness(1.3);
+        transform: scale(1);
+    }
+}

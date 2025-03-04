@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Information Costume Display</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left Side: Body Display with Costumes -->
+        <div class="costume-display">
+            <img id="body-image" src="wbody-display.png" alt="Human Body" class="body-image">
+            
+            <!-- Accessory placeholders positioned over body image -->
+            <img id="brain" class="accessory" src="costume/brain1.png" alt="Brain Accessory" >
+            <img id="eyes" class="accessory" src="costume/eyes1.png" alt="Eyes Accessory" >
+            <img id="ears" class="accessory" src="costume/ears1.png" alt="Ears Accessory" >
+            <img id="hands" class="accessory" src="costume/hands1.png" alt="Hands Accessory" >
+            <img id="heart" class="accessory" src="costume/heart1.png" alt="Heart Accessory" >
+            <img id="bio" class="accessory" src="costume/bio1.png" alt="Biometric Accessory" >
+            <img id="feet" class="accessory" src="costume/feet1.png" alt="Foor Accessory" >
+            <!-- Add other accessories as needed -->
+        </div>
+
+        <!-- Right Side: Data Type Information -->
+        <div class="data-info">
+            <div class="sci-fi-panel">
+                <div class="glow-border">
+                    <div class="panel-content">
+                        <!-- Section 1: Title and Subtitle -->
+                        <div class="panel-section">
+                            <h2 id="dataTypeName">Data Type</h2>
+                            <p class="subtitle">System Analysis Report</p>
+                            <div class="section-divider"></div>
+                        </div>
+
+                        <!-- Section 2: Graph -->
+                        <div class="panel-section graph-section">
+                            <div class="graph-placeholder">
+                                <!-- Replace with actual graph -->
+                                [GRAPH VISUALIZATION]
+                            </div>
+                            <p class="small-description">Performance metrics visualization based on neural patterns</p>
+                        </div>
+
+                        <!-- Section 3: Results -->
+                        <div class="panel-section">
+                            <div class="result-container">
+                                <div class="result-header">
+                                    <span class="result-number">84.7</span>
+                                    <span class="result-unit">ms</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 84.7%"></div>
+                                </div>
+                            </div>
+                            <p class="small-description">Average response time across neural pathways</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
