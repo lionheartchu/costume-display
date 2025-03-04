@@ -1,8 +1,13 @@
 // Track current image number for each accessory
 // Listen for messages from Site A
 window.addEventListener('message', function(event) {
-    // Verify the origin for security
-    if (event.origin !== 'https://lionheartchu.github.io/survey-ui-site/') return;
+    // Verify the origin for security - only the protocol, hostname and port
+    const allowedOrigin = 'https://lionheartchu.github.io';
+    
+    if (!event.origin.startsWith(allowedOrigin)) {
+        console.log("Origin verification failed:", event.origin);
+        return;
+    }
     
     console.log("Received message from survey site:", event.data);
     
