@@ -49,15 +49,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const randomStage = Math.floor(Math.random() * 4) + 1;
         
         console.log(`Testing: Revealing ${randomAccessory} at stage ${randomStage}`);
-        revealGarment(0, randomStage * 25); // This should test your revealGarment function
+        updateGarment(randomAccessory, randomStage); // This should test your updateGarment function
         
         showConnectionMessage("Test garment displayed!");
     };
     
     document.body.appendChild(testButton);
 });
-
-
 
 // Track current image number for each accessory
 // Listen for messages from Site A
@@ -273,14 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Add a mapping function to convert scores to stages
-function mapScoreToStage(score) {
-    if (score <= 25) return 1;        // Warning state (0-25)
-    else if (score <= 50) return 2;   // Caution state (26-50)
-    else if (score <= 75) return 3;   // Secure state (51-75)
-    else return 4;                    // Optimal state (76-100)
-}
-
 // Map data types from the survey to accessory IDs
 const dataTypeToAccessory = {
     "Visual Data": "eyes",
@@ -289,38 +279,100 @@ const dataTypeToAccessory = {
     "Cognitive Data": "brain",
     "Audio Data": "ears",
     "Geolocation Data": "feet",
-    "Biometric Data": "hands"
+    "Biometric Data": "bio"
 };
 
-// Process incoming data from the survey site
-function processSurveyData(data) {
-    // Calculate average score
-    const totalScore = data.responses.reduce((sum, response) => sum + parseFloat(response.answer), 0);
-    const averageScore = totalScore / data.responses.length;
+// Function to reveal garments as questions are completed
+function revealGarment(questionIndex, score) {
+    console.log(`Revealing garment for question ${questionIndex} with score ${score}`);
     
-    console.log("Received survey data, average score:", averageScore);
+    // Get the data type from Site A's questions array equivalent
+    let dataType = null;
     
-    // Loop through each response and update corresponding accessory
-    data.responses.forEach(response => {
-        const questionIndex = response.question - 1;
-        const score = parseFloat(response.answer);
-        const stage = mapScoreToStage(score);
+    // If we have the direct dataType from message
+    if (typeof questionIndex === 'object' && questionIndex.dataType) {
+        dataType = questionIndex.dataType;
+        score = questionIndex.score;
+    } 
+    // If we just have question index, use hardcoded mapping based on index
+    else {
+        // Hardcoded mapping based on your Site A question order
+        const dataTypes = [
+            "Visual Data",        // Q1: When posting personal photos...
+            "Communication Data", // Q2: When sending personal messages...
+            "Personal Data",      // Q3: When creating personal profiles...
+            "Cognitive Data",     // Q4: When apps analyze your data...
+            "Audio Data",         // Q5: When using voice assistants...
+            "Geolocation Data",   // Q6: When using apps that track locations...
+            "Biometric Data"      // Q7: When using biometric login...
+        ];
         
-        // Get the data type from the survey questions
-        if (siteAQuestions && siteAQuestions[questionIndex]) {
-            const dataType = siteAQuestions[questionIndex].dataType;
+        dataType = dataTypes[questionIndex];
+    }
+    
+    // Map data type to accessory
+    const accessoryId = dataTypeToAccessory[dataType];
+    
+    if (!accessoryId) {
+        console.error(`No accessory mapped for data type: ${dataType}`);
+        return;
+    }
+    
+    console.log(`Mapped data type ${dataType} to accessory ${accessoryId}`);
+    
+    // Calculate stage based on score
+    const stage = mapScoreToStage(score);
+    console.log(`Calculated stage ${stage} for score ${score}`);
+    
+    // Update the garment
+    updateGarment(accessoryId, stage);
+    
+    // Show a message to user
+    showConnectionMessage(`Updated ${accessoryId} to stage ${stage}`);
+}
+
+// Function to map score to stage
+function mapScoreToStage(score) {
+    if (score <= 25) return 1;        // Warning state (0-25)
+    else if (score <= 50) return 2;   // Caution state (26-50)
+    else if (score <= 75) return 3;   // Secure state (51-75)
+    else return 4;                    // Optimal state (76-100)
+}
+
+// Function to process the complete survey data
+function processSurveyData(data) {
+    console.log("Processing full survey data:", data);
+    
+    if (data.responses) {
+        // Process each response to update the corresponding garment
+        data.responses.forEach(response => {
+            const questionIndex = response.question - 1; // Convert from 1-based to 0-based
+            const score = parseFloat(response.answer);
+            
+            // Find data type from the question index
+            const dataTypes = [
+                "Visual Data",        // Q1: When posting personal photos...
+                "Communication Data", // Q2: When sending personal messages...
+                "Personal Data",      // Q3: When creating personal profiles...
+                "Cognitive Data",     // Q4: When apps analyze your data...
+                "Audio Data",         // Q5: When using voice assistants...
+                "Geolocation Data",   // Q6: When using apps that track locations...
+                "Biometric Data"      // Q7: When using biometric login...
+            ];
+            
+            const dataType = dataTypes[questionIndex];
             const accessoryId = dataTypeToAccessory[dataType];
             
-            // Update the accessory if we have a mapping for it
+            // Update the garment if we have a valid mapping
             if (accessoryId) {
-                console.log(`Updating ${accessoryId} (${dataType}) to stage ${stage} based on score ${score}`);
+                const stage = mapScoreToStage(score);
                 updateGarment(accessoryId, stage);
             }
-        }
-    });
-    
-    // Show a connection confirmation
-    showConnectionMessage("Profile updated based on your survey responses!");
+        });
+        
+        // Show a summary message
+        showConnectionMessage("Survey data processed! Your digital costume is complete.");
+    }
 }
 
 // Store the questions structure from Site A for reference
@@ -336,85 +388,37 @@ const siteAQuestions = [
 
 // Show a temporary message that data was received
 function showConnectionMessage(message) {
-    const messageDiv = document.createElement('div');
-    messageDiv.textContent = message;
-    messageDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 255, 240, 0.2);
-        border: 1px solid rgba(0, 255, 240, 0.8);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
-        z-index: 1000;
-        font-size: 16px;
-        box-shadow: 0 0 15px rgba(0, 255, 240, 0.5);
-        opacity: 0;
-        transition: opacity 0.5s;
-    `;
-    document.body.appendChild(messageDiv);
+    // Create or update a floating message
+    let messageBox = document.getElementById('connectionMessage');
     
-    // Fade in
-    setTimeout(() => {
-        messageDiv.style.opacity = "1";
-    }, 10);
-    
-    // Fade out and remove
-    setTimeout(() => {
-        messageDiv.style.opacity = "0";
-        setTimeout(() => {
-            document.body.removeChild(messageDiv);
-        }, 500);
-    }, 3000);
-}
-
-// Function to reveal garments as questions are completed
-function revealGarment(questionIndex, score) {
-    // Map question index to data type and accessory
-    if (siteAQuestions && siteAQuestions[questionIndex]) {
-        const dataType = siteAQuestions[questionIndex].dataType;
-        const accessoryId = dataTypeToAccessory[dataType];
-        
-        if (accessoryId) {
-            // Calculate stage based on score
-            const stage = mapScoreToStage(score);
-            
-            // Mark accessory as visible
-            accessories[accessoryId].visible = true;
-            
-            // Show it with animation
-            const element = document.getElementById(accessoryId);
-            if (element) {
-                // First set the right image/stage
-                element.src = `costume/${accessoryId}${stage}.png`;
-                
-                // Initially hidden
-                element.style.opacity = '0';
-                element.style.transform = 'scale(0.8)';
-                
-                // Reset all state classes
-                element.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
-                
-                // Add appropriate class based on the stage
-                if (stage === 1) element.classList.add('warning-state');
-                else if (stage === 2) element.classList.add('caution-state');
-                else if (stage === 3) element.classList.add('secure-state');
-                else if (stage === 4) element.classList.add('optimal-state');
-                
-                // Animate it in
-                setTimeout(() => {
-                    element.style.transition = 'opacity 1s ease, transform 1s ease';
-                    element.style.opacity = '1';
-                    element.style.transform = 'scale(1)';
-                    
-                    // Show a connection message
-                    showConnectionMessage(`${dataType} protection added!`);
-                }, 100);
-            }
-        }
+    if (!messageBox) {
+        messageBox = document.createElement('div');
+        messageBox.id = 'connectionMessage';
+        messageBox.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 240, 255, 0.2);
+            border: 1px solid rgba(0, 255, 240, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            transition: opacity 0.5s ease;
+        `;
+        document.body.appendChild(messageBox);
     }
+    
+    // Update the message
+    messageBox.textContent = message;
+    messageBox.style.opacity = '1';
+    
+    // Hide after a delay
+    setTimeout(() => {
+        messageBox.style.opacity = '0';
+    }, 3000);
 }
 
 // Add initialization function to hide all garments on page load
