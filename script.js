@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ... rest of your existing initialization code ...
 });
 
-// Function to display final survey results with enhanced styling
+// Enhanced function to display final survey results
 function displayFinalResults(surveyResults) {
     console.log("Displaying final survey results:", surveyResults);
     
@@ -812,6 +812,7 @@ function displayFinalResults(surveyResults) {
     const graphPlaceholder = document.querySelector('.graph-placeholder');
     const dataTypeName = document.getElementById('dataTypeName');
     const subtitle = document.getElementById('accessoryStatusSubtitle');
+    const panelContainer = document.querySelector('.panel-container');
     
     // Update the panel title
     dataTypeName.textContent = "Digital Privacy Complete!";
@@ -821,8 +822,24 @@ function displayFinalResults(surveyResults) {
         subtitle.textContent = "FINAL RESULTS";
     }
     
+    // FIX 1: Remove all state classes from graph and panel
+    graphPlaceholder.classList.remove('graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal');
+    if (panelContainer) {
+        panelContainer.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
+        // Apply neutral sci-fi styling
+        panelContainer.classList.add('final-results-panel');
+    }
+    
     // Create HTML for the results summary
     let resultsHTML = '<div class="final-results">';
+    
+    // FIX 3: Add scroll hint at the TOP
+    resultsHTML += `
+        <div class="scroll-hint">
+            <div class="scroll-arrow">↓</div>
+            <div class="scroll-text">Scroll for all results</div>
+        </div>
+    `;
     
     // Calculate average score
     let totalScore = 0;
@@ -858,14 +875,6 @@ function displayFinalResults(surveyResults) {
         </div>
     `;
     
-    // Add scroll hint
-    resultsHTML += `
-        <div class="scroll-hint">
-            <div class="scroll-arrow">↓</div>
-            <div class="scroll-text">Scroll for all results</div>
-        </div>
-    `;
-    
     resultsHTML += '</div>';
     
     // Inject into the graph area
@@ -896,12 +905,22 @@ function displayFinalResults(surveyResults) {
     const style = document.createElement('style');
     style.id = 'final-results-styles';
     style.textContent = `
+        /* FIX 1: Neutral sci-fi styling for final results panel */
+        .final-results-panel {
+            background: rgba(15, 25, 50, 0.85) !important; /* Slightly more transparent */
+            border: 1px solid rgba(0, 240, 255, 0.5) !important;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3) !important;
+        }
+        
         .final-results {
             padding: 5px;
-            max-height: 200px; /* Increased height for better scrolling */
+            max-height: 200px;
             overflow-y: auto;
             margin-bottom: 10px;
-            position: relative; /* For scroll hint positioning */
+            position: relative;
+            /* FIX 2: Add padding at the top and bottom */
+            padding-top: 10px !important;
+            padding-bottom: 10px !important;
         }
         
         .result-item {
@@ -926,8 +945,8 @@ function displayFinalResults(surveyResults) {
         }
         
         .result-bar {
-            width: 100%; /* Full width bar */
-            height: 10px; /* Taller bar */
+            width: 100%;
+            height: 10px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 5px;
             margin-top: 3px;
@@ -940,7 +959,6 @@ function displayFinalResults(surveyResults) {
             height: 100%;
             background: linear-gradient(to right, #00f0ff, #0066ff);
             border-radius: 5px;
-            /* Enhanced glow effect */
             box-shadow: 
                 0 0 8px rgba(0, 240, 255, 0.7),
                 0 0 15px rgba(0, 240, 255, 0.4);
@@ -964,7 +982,7 @@ function displayFinalResults(surveyResults) {
         }
         
         .result-average .result-bar {
-            height: 12px; /* Even taller for average */
+            height: 12px;
         }
         
         .result-average .result-bar-fill {
@@ -974,13 +992,15 @@ function displayFinalResults(surveyResults) {
                 0 0 20px rgba(0, 240, 255, 0.5);
         }
         
-        /* Scroll hint styling */
+        /* FIX 3: Scroll hint at the top with better styling */
         .scroll-hint {
             text-align: center;
             color: rgba(0, 240, 255, 0.8);
             font-size: 0.85em;
             padding: 5px 0;
-            margin-top: 8px;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
             animation: fade-pulse 1.5s infinite;
         }
         
