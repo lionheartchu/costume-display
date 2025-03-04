@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Map data types from the survey to accessory IDs
 const dataTypeToAccessory = {
     "Visual Data": "eyes",
-    "Communication Data": "ears",  
+    "Communication Data": "hands",
     "Personal Data": "heart",
     "Cognitive Data": "brain",
     "Audio Data": "ears",
@@ -502,11 +502,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.data && event.data.type === 'questionCompleted') {
             console.log("Processing question completion");
             revealGarment(event.data.questionIndex, event.data.score);
+        } else if (event.data && event.data.type === 'allQuestionsCompleted') {
+            console.log("All questions completed, showing final results");
+            displayFinalResults(event.data.surveyResults);
         }
     }, false);
 });
 
-// Simplified function to apply styling with shorter panel
+// Modified function to apply styling with shorter panel and less obvious stage 4
 function applyFuturisticStyles() {
     console.log("Applying futuristic panel styles with shorter panel");
     
@@ -551,7 +554,7 @@ function applyFuturisticStyles() {
         
         /* Enhanced data type title with moderate size */
         #dataTypeName {
-            font-size: 1.6em !important;
+            font-size: 1.5em !important;
             color: rgba(0, 240, 255, 1) !important;
             text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
             letter-spacing: 1px !important;
@@ -597,6 +600,12 @@ function applyFuturisticStyles() {
             filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) !important;
         }
         
+        /* Make stage 4 less obvious by reducing its glow/intensity */
+        .panel-optimal-state, .graph-optimal .panel-accessory-image {
+            filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.3)) !important;
+            opacity: 0.9 !important;
+        }
+        
         /* Make bottom description reasonably sized */
         .panel-section:last-child .small-description {
             font-size: 0.95em !important;
@@ -614,7 +623,7 @@ function applyFuturisticStyles() {
     document.head.appendChild(futuristicStyles);
 }
 
-// Update the panel UI function with moderate text sizes
+// Update the panel UI function with more friendly descriptions
 function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType = null) {
     const accessory = accessories[accessoryId];
     const currentImage = accessory.current;
@@ -696,15 +705,15 @@ function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType 
     
     graphPlaceholder.appendChild(img);
     
-    // Update description based on current image number
+    // Update description based on current image number with more friendly wording
     const descriptions = {
-        1: "Warning: System requires immediate attention",
-        2: "Basic functionality restored",
-        3: "Enhanced performance active",
-        4: "Optimal condition achieved"
+        1: "Looks like this needs some attention:|",
+        2: "Getting better! Some protection in place.",
+        3: "Solid protection active--but there's room for improvement.",
+        4: "Amazing! You've maximized your protection."
     };
     smallDescription.textContent = descriptions[currentImage] || 
-        `${accessoryId} performance level: ${currentImage}`;
+        `Protection level: ${currentImage}`;
     
     // Update the result number and progress bar
     const resultNumber = document.querySelector('.result-number');
@@ -725,14 +734,14 @@ function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType 
     document.querySelector('.result-unit').textContent = '%';
     progressFill.style.width = `${percentage}%`;
     
-    // Update bottom description with new format
+    // Update bottom description with new friendly format
     const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
     const pointsRemaining = (100 - percentage).toFixed(1);
     
     if (percentage < 100) {
-        bottomDescription.textContent = `You need ${pointsRemaining} more points to fully protect your ${accessoryId}.`;
+        bottomDescription.textContent = `Just ${pointsRemaining} more points and your ${accessoryId} will be fully protected!`;
     } else {
-        bottomDescription.textContent = `Your ${accessoryId} is fully protected!`;
+        bottomDescription.textContent = `Fantastic! Your ${accessoryId} has complete protection!`;
     }
     
     // Log the update for debugging
@@ -787,3 +796,169 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ... rest of your existing initialization code ...
 });
+
+// Function to display final survey results
+function displayFinalResults(surveyResults) {
+    console.log("Displaying final survey results:", surveyResults);
+    
+    // Get the panel elements
+    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    const dataTypeName = document.getElementById('dataTypeName');
+    const subtitle = document.getElementById('accessoryStatusSubtitle');
+    
+    // Update the panel title
+    dataTypeName.textContent = "Digital Privacy Complete!";
+    
+    // Update subtitle
+    if (subtitle) {
+        subtitle.textContent = "FINAL RESULTS";
+    }
+    
+    // Create HTML for the results summary
+    let resultsHTML = '<div class="final-results">';
+    
+    // Calculate average score
+    let totalScore = 0;
+    let count = 0;
+    
+    // Add each data type with its score
+    for (const [dataType, score] of Object.entries(surveyResults)) {
+        if (typeof score === 'number') {
+            const accessoryId = dataTypeToAccessory[dataType] || dataType.toLowerCase().replace(' ', '-');
+            resultsHTML += `
+                <div class="result-item">
+                    <div class="result-label">${dataType}:</div>
+                    <div class="result-value">${score.toFixed(1)}%</div>
+                    <div class="result-bar">
+                        <div class="result-bar-fill" style="width: ${score}%"></div>
+                    </div>
+                </div>
+            `;
+            totalScore += score;
+            count++;
+        }
+    }
+    
+    // Calculate and add average
+    const averageScore = count > 0 ? totalScore / count : 0;
+    resultsHTML += `
+        <div class="result-item result-average">
+            <div class="result-label">Overall Protection:</div>
+            <div class="result-value">${averageScore.toFixed(1)}%</div>
+            <div class="result-bar">
+                <div class="result-bar-fill" style="width: ${averageScore}%"></div>
+            </div>
+        </div>
+    `;
+    
+    resultsHTML += '</div>';
+    
+    // Inject into the graph area
+    graphPlaceholder.innerHTML = resultsHTML;
+    
+    // Update the bottom description
+    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
+    if (bottomDescription) {
+        if (averageScore >= 90) {
+            bottomDescription.textContent = "Amazing work! Your digital privacy protection is exceptional!";
+        } else if (averageScore >= 70) {
+            bottomDescription.textContent = "Great job! You've built strong digital privacy protection.";
+        } else if (averageScore >= 50) {
+            bottomDescription.textContent = "Good start! Your digital privacy costume is taking shape.";
+        } else {
+            bottomDescription.textContent = "You've begun your digital privacy journey. Keep learning!";
+        }
+    }
+    
+    // Update the result number and progress bar with the average
+    const resultNumber = document.querySelector('.result-number');
+    const progressFill = document.querySelector('.progress-fill');
+    
+    if (resultNumber) resultNumber.textContent = averageScore.toFixed(1);
+    if (progressFill) progressFill.style.width = `${averageScore}%`;
+    
+    // Add styles for the final results display
+    const style = document.createElement('style');
+    style.id = 'final-results-styles';
+    style.textContent = `
+        .final-results {
+            padding: 5px;
+            max-height: 180px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        
+        .result-item {
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .result-label {
+            width: 65%;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: bold;
+        }
+        
+        .result-value {
+            width: 35%;
+            text-align: right;
+            color: rgba(0, 240, 255, 1);
+            text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+        }
+        
+        .result-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            margin-top: 3px;
+            overflow: hidden;
+        }
+        
+        .result-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, #00f0ff, #0066ff);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+        }
+        
+        .result-average {
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(0, 240, 255, 0.3);
+        }
+        
+        .result-average .result-label,
+        .result-average .result-value {
+            font-size: 1.1em;
+        }
+        
+        .result-average .result-bar {
+            height: 10px;
+        }
+        
+        /* Subtle scrollbar styling */
+        .final-results::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .final-results::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        .final-results::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, 0.5);
+            border-radius: 3px;
+        }
+    `;
+    
+    // Remove any existing styles
+    const oldStyles = document.getElementById('final-results-styles');
+    if (oldStyles) oldStyles.remove();
+    
+    // Add new styles
+    document.head.appendChild(style);
+}
