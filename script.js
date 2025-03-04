@@ -88,21 +88,43 @@ window.addEventListener('message', function(event) {
 
 // Function to update garment to specific stage
 function updateGarment(garmentId, stage) {
-    if (accessories[garmentId]) {
-        // Set the current stage
-        accessories[garmentId].current = stage;
+    console.log(`Updating garment ${garmentId} to stage ${stage}`);
+    
+    if (!accessories[garmentId]) {
+        console.error(`Unknown accessory: ${garmentId}`);
+        return;
+    }
+    
+    // Set the current stage
+    accessories[garmentId].current = stage;
+    
+    // Mark as visible
+    accessories[garmentId].visible = true;
+    
+    // Update the image
+    const element = document.getElementById(garmentId);
+    if (element) {
+        console.log(`Found element with ID ${garmentId}`);
         
-        // Mark as visible if not already
-        accessories[garmentId].visible = true;
+        // Ensure it's visible - this is critical
+        element.style.visibility = 'visible';
+        element.style.opacity = '1';
+        element.style.display = 'block'; // Ensure it's displayed
         
-        // Update the image
-        const element = document.getElementById(garmentId);
-        if (element) {
-            // Make sure it's visible
-            element.style.visibility = 'visible';
+        // Debug: Log the image path we're trying to use
+        const imagePath = `costume/${garmentId}${stage}.png`;
+        console.log(`Setting image source to: ${imagePath}`);
+        
+        // Try to preload the image to verify it exists
+        const img = new Image();
+        img.onload = function() {
+            console.log(`Successfully loaded image: ${imagePath}`);
+            // Now set the actual element source
+            element.src = imagePath;
             
-            // Update source
-            element.src = `costume/${garmentId}${stage}.png`;
+            // Animate the appearance
+            element.style.transition = 'opacity 0.5s ease';
+            element.style.opacity = '1';
             
             // Reset all state classes
             element.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
@@ -115,7 +137,33 @@ function updateGarment(garmentId, stage) {
             
             // Update the panel display
             updatePanelWithAccessoryImage(garmentId);
-        }
+            
+            // Show success message
+            showConnectionMessage(`Updated ${garmentId} to stage ${stage}`);
+        };
+        
+        img.onerror = function() {
+            console.error(`Failed to load image: ${imagePath}`);
+            showConnectionMessage(`Error loading ${garmentId} stage ${stage}`, true);
+            
+            // Show what image paths we're looking for
+            console.log(`Attempted path: ${imagePath}`);
+            console.log('Checking file structure...');
+            
+            // Try alternative paths
+            const altPaths = [
+                `costume/${garmentId}_${stage}.png`,
+                `costume/${garmentId}-${stage}.png`,
+                `costume/${garmentId}/${stage}.png`,
+                `images/${garmentId}${stage}.png`
+            ];
+            
+            console.log(`Alternative paths to check: ${altPaths.join(', ')}`);
+        };
+        
+        img.src = imagePath;
+    } else {
+        console.error(`Element with ID ${garmentId} not found`);
     }
 }
 
@@ -387,7 +435,7 @@ const siteAQuestions = [
 ];
 
 // Show a temporary message that data was received
-function showConnectionMessage(message) {
+function showConnectionMessage(message, isError = false) {
     // Create or update a floating message
     let messageBox = document.getElementById('connectionMessage');
     
@@ -411,9 +459,17 @@ function showConnectionMessage(message) {
         document.body.appendChild(messageBox);
     }
     
-    // Update the message
+    // Update the message with error styling if needed
     messageBox.textContent = message;
     messageBox.style.opacity = '1';
+    
+    if (isError) {
+        messageBox.style.background = 'rgba(255, 0, 0, 0.2)';
+        messageBox.style.border = '1px solid rgba(255, 0, 0, 0.8)';
+    } else {
+        messageBox.style.background = 'rgba(0, 240, 255, 0.2)';
+        messageBox.style.border = '1px solid rgba(0, 255, 240, 0.8)';
+    }
     
     // Hide after a delay
     setTimeout(() => {
@@ -464,4 +520,83 @@ document.addEventListener('DOMContentLoaded', function() {
             revealGarment(event.data.questionIndex, event.data.score);
         }
     }, false);
+});
+
+// Add a function to display diagnostic information
+function displayDiagnostics() {
+    console.log("DISPLAYING DIAGNOSTICS");
+    
+    // Create diagnostic overlay
+    const diagnostics = document.createElement('div');
+    diagnostics.id = 'diagnosticsOverlay';
+    diagnostics.style.cssText = `
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #00f0ff;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 1000;
+        font-family: monospace;
+        max-width: 80%;
+        max-height: 80%;
+        overflow: auto;
+    `;
+    
+    // Gather information about all accessories
+    let info = "<h3>Accessories Diagnostics</h3>";
+    
+    Object.keys(accessories).forEach(id => {
+        const element = document.getElementById(id);
+        const status = element ? "Found" : "NOT FOUND";
+        const visibility = element ? 
+            `visibility: ${element.style.visibility}, opacity: ${element.style.opacity}, display: ${element.style.display}` : 
+            "N/A";
+        
+        info += `<div style="margin-bottom:10px;">
+            <strong>${id}</strong>: ${status}<br>
+            Current stage: ${accessories[id].current}<br>
+            Visible: ${accessories[id].visible}<br>
+            Style: ${visibility}<br>
+            Image path: costume/${id}${accessories[id].current}.png
+        </div>`;
+    });
+    
+    diagnostics.innerHTML = info + `
+        <button id="closeBtn" style="background:#00f0ff; color:black; border:none; padding:5px 10px; margin-top:10px;">
+            Close
+        </button>
+    `;
+    
+    document.body.appendChild(diagnostics);
+    
+    // Add close button functionality
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        document.body.removeChild(diagnostics);
+    });
+}
+
+// Add diagnostic button
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    // Add diagnostics button
+    const diagButton = document.createElement('button');
+    diagButton.textContent = 'Diagnostics';
+    diagButton.style.cssText = `
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(255, 0, 0, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 0, 0, 0.8);
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000;
+    `;
+    
+    diagButton.onclick = displayDiagnostics;
+    document.body.appendChild(diagButton);
 });
