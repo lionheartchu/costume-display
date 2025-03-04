@@ -210,123 +210,97 @@ function cycleAccessoryImage(accessoryId) {
     }, 50);
 }
 
-function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType = null) {
-    const accessory = accessories[accessoryId];
-    const currentImage = accessory.current;
-    const graphPlaceholder = document.querySelector('.graph-placeholder');
-    const dataTypeName = document.getElementById('dataTypeName');
-    const smallDescription = document.querySelector('.graph-section .small-description');
+// Add this function to the beginning of your script to set up the enhanced UI
+function enhancePanelUI() {
+    console.log("Enhancing panel UI with futuristic design");
     
-    // Determine the data type if not provided (for backward compatibility)
-    let displayDataType = dataType;
-    if (!displayDataType) {
-        // Try to reverse-lookup the data type based on accessory
-        for (const [type, accId] of Object.entries(dataTypeToAccessory)) {
-            if (accId === accessoryId) {
-                displayDataType = type;
-                break;
-            }
+    // Add new styles to the document
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Futuristic monospace font for the entire panel */
+        .panel-container, .panel-section, .result-number, #dataTypeName, #accessoryStatusSubtitle {
+            font-family: 'Courier New', monospace !important;
         }
-        // Fallback if no match found
-        if (!displayDataType) {
-            displayDataType = accessoryId.charAt(0).toUpperCase() + accessoryId.slice(1) + " Data";
+        
+        /* Make panel lighter, shorter, wider and more futuristic */
+        .panel-container {
+            background: rgba(15, 25, 50, 0.7) !important;
+            border: 1px solid rgba(0, 240, 255, 0.3) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
+            padding: 15px 25px !important;
+            max-height: 420px !important;
+            width: 380px !important;
+            backdrop-filter: blur(10px) !important;
         }
-    }
-    
-    // Update the panel title to show data type security
-    dataTypeName.textContent = `${displayDataType} Security`;
-    
-    // Add or update subtitle to show accessory status
-    let subtitle = document.getElementById('accessoryStatusSubtitle');
-    if (!subtitle) {
-        subtitle = document.createElement('div');
-        subtitle.id = 'accessoryStatusSubtitle';
-        subtitle.style.cssText = `
-            font-size: 0.9em;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 4px;
-            margin-bottom: 10px;
-            text-align: center;
-        `;
-        dataTypeName.parentNode.insertBefore(subtitle, dataTypeName.nextSibling);
-    }
-    subtitle.textContent = `${accessoryId.toUpperCase()} Status`;
-    
-    // Clear and update the graph section with the current accessory image
-    graphPlaceholder.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = `costume/${accessoryId}${currentImage}.png`;
-    img.alt = `${accessoryId} visualization`;
-    img.classList.add('panel-accessory-image');
-    
-    // Reset all state classes from the image and placeholder
-    img.classList.remove('panel-warning-state', 'panel-caution-state', 'panel-secure-state', 'panel-optimal-state');
-    graphPlaceholder.classList.remove('graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal');
-    
-    // Add appropriate class based on the stage
-    if (currentImage === 1) {
-        img.classList.add('panel-warning-state');
-        graphPlaceholder.classList.add('graph-warning');
-    } else if (currentImage === 2) {
-        img.classList.add('panel-caution-state');
-        graphPlaceholder.classList.add('graph-caution');
-    } else if (currentImage === 3) {
-        img.classList.add('panel-secure-state');
-        graphPlaceholder.classList.add('graph-secure');
-    } else if (currentImage === 4) {
-        img.classList.add('panel-optimal-state');
-        graphPlaceholder.classList.add('graph-optimal');
-    }
-    
-    graphPlaceholder.appendChild(img);
-    
-    // Update description based on current image number
-    const descriptions = {
-        1: "Warning: System requires immediate attention",
-        2: "Basic functionality restored",
-        3: "Enhanced performance active",
-        4: "Optimal condition achieved"
-    };
-    smallDescription.textContent = descriptions[currentImage] || 
-        `${accessoryId} performance level: ${currentImage}`;
-    
-    // Update the result number and progress bar
-    const resultNumber = document.querySelector('.result-number');
-    const progressFill = document.querySelector('.progress-fill');
-    
-    // Use the exact score from survey if provided, otherwise calculate from stage
-    let percentage;
-    if (exactScore !== null) {
-        // Use the exact value from the slider (0-100)
-        percentage = exactScore;
-    } else {
-        // Calculate based on stage as before
-        percentage = (currentImage / accessory.total) * 100;
-    }
-    
-    // Update the display
-    resultNumber.textContent = percentage.toFixed(1);
-    document.querySelector('.result-unit').textContent = '%';
-    progressFill.style.width = `${percentage}%`;
-    
-    // Update bottom description with new format
-    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
-    const pointsRemaining = (100 - percentage).toFixed(1);
-    
-    if (percentage < 100) {
-        bottomDescription.textContent = `You need ${pointsRemaining} more points to fully protect your ${accessoryId}.`;
-    } else {
-        bottomDescription.textContent = `Your ${accessoryId} is fully protected!`;
-    }
-    
-    // Log the update for debugging
-    console.log(`Updated panel for ${accessoryId}: Stage ${currentImage}, Value ${percentage.toFixed(1)}%`);
+        
+        /* Animated border effect */
+        @keyframes borderPulse {
+            0% { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+            50% { border-color: rgba(0, 240, 255, 0.7); box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); }
+            100% { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+        }
+        
+        .panel-container {
+            animation: borderPulse 4s infinite;
+        }
+        
+        /* Enhanced data type title */
+        #dataTypeName {
+            font-size: 1.8em !important;
+            color: rgba(0, 240, 255, 1) !important;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
+            letter-spacing: 1px !important;
+            margin-bottom: 4px !important;
+        }
+        
+        /* Enhanced accessory status subtitle */
+        #accessoryStatusSubtitle {
+            font-size: 1.2em !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: bold !important;
+            letter-spacing: 1px !important;
+            margin-top: 2px !important;
+            margin-bottom: 12px !important;
+            background: rgba(0, 0, 0, 0.2) !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            display: inline-block !important;
+        }
+        
+        /* Futuristic progress bar */
+        .progress-bar {
+            height: 12px !important;
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid rgba(0, 240, 255, 0.3) !important;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(to right, #00f0ff, #0066ff) !important;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.7) !important;
+        }
+        
+        /* Results number styling */
+        .result-number {
+            font-size: 2.2em !important;
+            color: rgba(0, 240, 255, 1) !important;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
+        }
+        
+        /* Panel image styling */
+        .panel-accessory-image {
+            max-height: 150px !important;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) !important;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
-// Add event listeners when the document is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Hide all garments initially
-    initializeGarments();
+// Call this function when the document is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("COSTUME SITE LOADED - TESTING COMMUNICATIONS");
+    // Call the UI enhancement function
+    enhancePanelUI();
     
     // Add click handlers for all accessories
     Object.keys(accessories).forEach(accessoryId => {
@@ -654,3 +628,128 @@ document.addEventListener('DOMContentLoaded', function() {
     diagButton.onclick = displayDiagnostics;
     document.body.appendChild(diagButton);
 });
+
+// Modified function to update panel with better text
+function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType = null) {
+    const accessory = accessories[accessoryId];
+    const currentImage = accessory.current;
+    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    const dataTypeName = document.getElementById('dataTypeName');
+    const smallDescription = document.querySelector('.graph-section .small-description');
+    
+    // Determine the data type if not provided (for backward compatibility)
+    let displayDataType = dataType;
+    if (!displayDataType) {
+        // Try to reverse-lookup the data type based on accessory
+        for (const [type, accId] of Object.entries(dataTypeToAccessory)) {
+            if (accId === accessoryId) {
+                displayDataType = type;
+                break;
+            }
+        }
+        // Fallback if no match found
+        if (!displayDataType) {
+            displayDataType = accessoryId.charAt(0).toUpperCase() + accessoryId.slice(1) + " Data";
+        }
+    }
+    
+    // Update the panel title to show data type security
+    dataTypeName.textContent = `${displayDataType} Security`;
+    
+    // Add or update subtitle to show accessory status
+    let subtitle = document.getElementById('accessoryStatusSubtitle');
+    if (!subtitle) {
+        subtitle = document.createElement('div');
+        subtitle.id = 'accessoryStatusSubtitle';
+        subtitle.style.cssText = `
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-top: 2px;
+            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        `;
+        dataTypeName.parentNode.insertBefore(subtitle, dataTypeName.nextSibling);
+    }
+    subtitle.textContent = `${accessoryId.toUpperCase()} STATUS`;
+    
+    // Remove the "System Analysis Report" subtitle if it exists
+    const systemAnalysisSubtitle = document.querySelector('.subtitle, .panel-subtitle');
+    if (systemAnalysisSubtitle && systemAnalysisSubtitle.textContent.includes('System Analysis')) {
+        systemAnalysisSubtitle.remove();
+    }
+    
+    // Clear and update the graph section with the current accessory image
+    graphPlaceholder.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = `costume/${accessoryId}${currentImage}.png`;
+    img.alt = `${accessoryId} visualization`;
+    img.classList.add('panel-accessory-image');
+    
+    // Reset all state classes from the image and placeholder
+    img.classList.remove('panel-warning-state', 'panel-caution-state', 'panel-secure-state', 'panel-optimal-state');
+    graphPlaceholder.classList.remove('graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal');
+    
+    // Add appropriate class based on the stage
+    if (currentImage === 1) {
+        img.classList.add('panel-warning-state');
+        graphPlaceholder.classList.add('graph-warning');
+    } else if (currentImage === 2) {
+        img.classList.add('panel-caution-state');
+        graphPlaceholder.classList.add('graph-caution');
+    } else if (currentImage === 3) {
+        img.classList.add('panel-secure-state');
+        graphPlaceholder.classList.add('graph-secure');
+    } else if (currentImage === 4) {
+        img.classList.add('panel-optimal-state');
+        graphPlaceholder.classList.add('graph-optimal');
+    }
+    
+    graphPlaceholder.appendChild(img);
+    
+    // Update description based on current image number
+    const descriptions = {
+        1: "Warning: System requires immediate attention",
+        2: "Basic functionality restored",
+        3: "Enhanced performance active",
+        4: "Optimal condition achieved"
+    };
+    smallDescription.textContent = descriptions[currentImage] || 
+        `${accessoryId} performance level: ${currentImage}`;
+    
+    // Update the result number and progress bar
+    const resultNumber = document.querySelector('.result-number');
+    const progressFill = document.querySelector('.progress-fill');
+    
+    // Use the exact score from survey if provided, otherwise calculate from stage
+    let percentage;
+    if (exactScore !== null) {
+        // Use the exact value from the slider (0-100)
+        percentage = exactScore;
+    } else {
+        // Calculate based on stage as before
+        percentage = (currentImage / accessory.total) * 100;
+    }
+    
+    // Update the display
+    resultNumber.textContent = percentage.toFixed(1);
+    document.querySelector('.result-unit').textContent = '%';
+    progressFill.style.width = `${percentage}%`;
+    
+    // Update bottom description with new format
+    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
+    const pointsRemaining = (100 - percentage).toFixed(1);
+    
+    if (percentage < 100) {
+        bottomDescription.textContent = `You need ${pointsRemaining} more points to fully protect your ${accessoryId}.`;
+    } else {
+        bottomDescription.textContent = `Your ${accessoryId} is fully protected!`;
+    }
+    
+    // Log the update for debugging
+    console.log(`Updated panel for ${accessoryId}: Stage ${currentImage}, Value ${percentage.toFixed(1)}%`);
+}
