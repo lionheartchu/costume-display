@@ -87,8 +87,8 @@ window.addEventListener('message', function(event) {
 }, false);
 
 // Function to update garment to specific stage
-function updateGarment(garmentId, stage, exactScore = null) {
-    console.log(`Updating garment ${garmentId} to stage ${stage} with score ${exactScore}`);
+function updateGarment(garmentId, stage, exactScore = null, dataType = null) {
+    console.log(`Updating garment ${garmentId} to stage ${stage}`);
     
     if (!accessories[garmentId]) {
         console.error(`Unknown accessory: ${garmentId}`);
@@ -135,8 +135,8 @@ function updateGarment(garmentId, stage, exactScore = null) {
             else if (stage === 3) element.classList.add('secure-state');
             else if (stage === 4) element.classList.add('optimal-state');
             
-            // Update the panel display with exact score if available
-            updatePanelWithAccessoryImage(garmentId, exactScore);
+            // Update the panel display with exact score and data type if available
+            updatePanelWithAccessoryImage(garmentId, exactScore, dataType);
             
             // Show success message
             showConnectionMessage(`Updated ${garmentId} to stage ${stage}`);
@@ -210,15 +210,47 @@ function cycleAccessoryImage(accessoryId) {
     }, 50);
 }
 
-function updatePanelWithAccessoryImage(accessoryId, exactScore = null) {
+function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType = null) {
     const accessory = accessories[accessoryId];
     const currentImage = accessory.current;
     const graphPlaceholder = document.querySelector('.graph-placeholder');
     const dataTypeName = document.getElementById('dataTypeName');
     const smallDescription = document.querySelector('.graph-section .small-description');
     
-    // Update the panel title
-    dataTypeName.textContent = accessoryId.charAt(0).toUpperCase() + accessoryId.slice(1) + ' Status';
+    // Determine the data type if not provided (for backward compatibility)
+    let displayDataType = dataType;
+    if (!displayDataType) {
+        // Try to reverse-lookup the data type based on accessory
+        for (const [type, accId] of Object.entries(dataTypeToAccessory)) {
+            if (accId === accessoryId) {
+                displayDataType = type;
+                break;
+            }
+        }
+        // Fallback if no match found
+        if (!displayDataType) {
+            displayDataType = accessoryId.charAt(0).toUpperCase() + accessoryId.slice(1) + " Data";
+        }
+    }
+    
+    // Update the panel title to show data type security
+    dataTypeName.textContent = `${displayDataType} Security`;
+    
+    // Add or update subtitle to show accessory status
+    let subtitle = document.getElementById('accessoryStatusSubtitle');
+    if (!subtitle) {
+        subtitle = document.createElement('div');
+        subtitle.id = 'accessoryStatusSubtitle';
+        subtitle.style.cssText = `
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 4px;
+            margin-bottom: 10px;
+            text-align: center;
+        `;
+        dataTypeName.parentNode.insertBefore(subtitle, dataTypeName.nextSibling);
+    }
+    subtitle.textContent = `${accessoryId.toUpperCase()} Status`;
     
     // Clear and update the graph section with the current accessory image
     graphPlaceholder.innerHTML = '';
@@ -276,8 +308,16 @@ function updatePanelWithAccessoryImage(accessoryId, exactScore = null) {
     resultNumber.textContent = percentage.toFixed(1);
     document.querySelector('.result-unit').textContent = '%';
     progressFill.style.width = `${percentage}%`;
-    document.querySelector('.panel-section:last-child .small-description')
-        .textContent = `System efficiency for ${accessoryId}`;
+    
+    // Update bottom description with new format
+    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
+    const pointsRemaining = (100 - percentage).toFixed(1);
+    
+    if (percentage < 100) {
+        bottomDescription.textContent = `You need ${pointsRemaining} more points to fully protect your ${accessoryId}.`;
+    } else {
+        bottomDescription.textContent = `Your ${accessoryId} is fully protected!`;
+    }
     
     // Log the update for debugging
     console.log(`Updated panel for ${accessoryId}: Stage ${currentImage}, Value ${percentage.toFixed(1)}%`);
@@ -387,10 +427,10 @@ function revealGarment(questionIndex, score) {
     console.log(`Calculated stage ${stage} for score ${score}`);
     
     // Update the garment
-    updateGarment(accessoryId, stage, score);
+    updateGarment(accessoryId, stage, score, dataType);
     
     // Show a message to user
-    showConnectionMessage(`Updated ${accessoryId} to stage ${stage} (${score.toFixed(1)}%)`);
+    showConnectionMessage(`Updated ${accessoryId} to stage ${stage}`);
 }
 
 // Function to map score to stage
@@ -428,7 +468,7 @@ function processSurveyData(data) {
             // Update the garment if we have a valid mapping
             if (accessoryId) {
                 const stage = mapScoreToStage(score);
-                updateGarment(accessoryId, stage, score);
+                updateGarment(accessoryId, stage, score, dataType);
             }
         });
         
