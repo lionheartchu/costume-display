@@ -11,7 +11,7 @@ window.addEventListener('message', function(event) {
         
         if (event.data.type === 'questionCompleted') {
             console.log("Question completed data received:", event.data);
-            revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
+            revealGarment(event.data.questionIndex, event.data.score);
         } else if (event.data.type === 'surveyResults') {
             console.log("Survey results received:", event.data);
             processSurveyData(event.data);
@@ -37,7 +37,7 @@ window.addEventListener('message', function(event) {
     
     // Process individual question completion (new functionality)
     if (event.data.type === 'questionCompleted') {
-        revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
+        revealGarment(event.data.questionIndex, event.data.score);
     }
     
     // Process the garment update
@@ -315,120 +315,52 @@ const dataTypeToAccessory = {
 };
 
 // Function to reveal garments as questions are completed
-function revealGarment(questionIndex, score, dataType) {
-    // Get data type for this question if not provided
-    const dataTypeToReveal = dataType || getDataTypeForQuestion(questionIndex);
-    const accessoryIdToReveal = dataTypeToAccessory[dataTypeToReveal];
+function revealGarment(questionIndex, score) {
+    console.log(`Revealing garment for question ${questionIndex} with score ${score}`);
     
-    // Check if we have a matching accessory
-    if (!accessoryIdToReveal) {
-        return;
-    }
+    // Get the data type from Site A's questions array equivalent
+    let dataType = null;
     
-    // Find the costume piece
-    const accessory = document.getElementById(accessoryIdToReveal);
-    if (!accessory) {
-        return;
-    }
-    
-    // RESTORE ORIGINAL FUNCTIONALITY
-    // Calculate stage based on score (1-4)
-    let stage = 1;
-    let percentage = score;
-    
-    if (score <= 25) {
-        stage = 1;
-    } else if (score <= 50) {
-        stage = 2;
-    } else if (score <= 75) {
-        stage = 3;
-    } else {
-        stage = 4;
-    }
-    
-    // Store the actual score as data attribute for hover use
-    accessory.setAttribute('data-score', percentage);
-    
-    // Update images
-    const images = accessory.querySelectorAll('img');
-    images.forEach((img, index) => {
-        img.style.opacity = (index + 1 === stage) ? 1 : 0;
-    });
-    
-    // Update accessory data
-    accessory.setAttribute('data-stage', stage);
-    accessory.setAttribute('data-revealed', 'true');
-    
-    // Update the panel if this is the most recent question
-    updatePanelForAccessory(accessoryIdToReveal, dataTypeToReveal, stage, percentage);
-}
-
-// Helper function to update panel (only the most recent update)
-function updatePanelForAccessory(accessoryId, dataType, stage, percentage) {
-    // Update panel elements
-    const dataTypeName = document.getElementById('dataTypeName');
-    const accessoryStatusSubtitle = document.getElementById('accessoryStatusSubtitle');
-    const resultNumber = document.querySelector('.result-number');
-    const progressFill = document.querySelector('.progress-fill');
-    
-    // Set data type name
-    if (dataTypeName) {
-        dataTypeName.textContent = dataType;
-    }
-    
-    // Set status subtitle based on stage
-    if (accessoryStatusSubtitle) {
-        const stageTexts = [
-            "Needs Protection", 
-            "Basic Protection", 
-            "Strong Protection", 
-            "Maximum Protection"
+    // If we have the direct dataType from message
+    if (typeof questionIndex === 'object' && questionIndex.dataType) {
+        dataType = questionIndex.dataType;
+        score = questionIndex.score;
+    } 
+    // If we just have question index, use hardcoded mapping based on index
+    else {
+        // Hardcoded mapping based on your Site A question order
+        const dataTypes = [
+            "Visual Data",        // Q1: When posting personal photos...
+            "Communication Data", // Q2: When sending personal messages...
+            "Personal Data",      // Q3: When creating personal profiles...
+            "Cognitive Data",     // Q4: When apps analyze your data...
+            "Audio Data",         // Q5: When using voice assistants...
+            "Geolocation Data",   // Q6: When using apps that track locations...
+            "Biometric Data"      // Q7: When using biometric login...
         ];
-        accessoryStatusSubtitle.textContent = stageTexts[stage - 1];
-    }
-    
-    // Update result number and progress bar
-    if (resultNumber) {
-        resultNumber.textContent = percentage.toFixed(1);
-        // Store the current value to restore after hover
-        resultNumber.setAttribute('data-current-value', percentage.toFixed(1));
-    }
-    
-    if (progressFill) {
-        progressFill.style.width = `${percentage}%`;
-        // Store the current width to restore after hover
-        progressFill.setAttribute('data-current-width', `${percentage}%`);
-    }
-    
-    // Update panel style based on stage
-    const panel = document.querySelector('.panel-container');
-    if (panel) {
-        panel.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
         
-        const stateClasses = ['warning-state', 'caution-state', 'secure-state', 'optimal-state'];
-        panel.classList.add(stateClasses[stage - 1]);
+        dataType = dataTypes[questionIndex];
     }
     
-    // Update graph style
-    const graphPlaceholder = document.querySelector('.graph-placeholder');
-    if (graphPlaceholder) {
-        graphPlaceholder.classList.remove('graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal');
-        
-        const graphClasses = ['graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal'];
-        graphPlaceholder.classList.add(graphClasses[stage - 1]);
+    // Map data type to accessory
+    const accessoryId = dataTypeToAccessory[dataType];
+    
+    if (!accessoryId) {
+        console.error(`No accessory mapped for data type: ${dataType}`);
+        return;
     }
     
-    // Update bottom description
-    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
-    if (bottomDescription) {
-        const pointsRemaining = Math.ceil(100 - percentage);
-        
-        if (percentage < 100) {
-            bottomDescription.textContent = `Just ${pointsRemaining} more points and your ${accessoryId} will be fully protected!`;
-        } else {
-            bottomDescription.textContent = `Fantastic! Your ${accessoryId} has complete protection!`;
-        }
-    }
+    console.log(`Mapped data type ${dataType} to accessory ${accessoryId}`);
+    
+    // Calculate stage based on score
+    const stage = mapScoreToStage(score);
+    console.log(`Calculated stage ${stage} for score ${score}`);
+    
+    // Update the garment
+    updateGarment(accessoryId, stage, score, dataType);
+    
+    // Show a message to user
+    showConnectionMessage(`Updated ${accessoryId} to stage ${stage}`);
 }
 
 // Function to map score to stage
@@ -949,20 +881,11 @@ function displayFinalResults(surveyResults) {
     // Inject into the graph area
     graphPlaceholder.innerHTML = resultsHTML;
     
-    // Update the bottom description - remove stage descriptions
-    const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
-    if (bottomDescription) {
-        // Remove any text about stages and replace with final summary
-        if (averageScore >= 90) {
-            bottomDescription.textContent = "Amazing work! Your digital privacy protection is exceptional!";
-        } else if (averageScore >= 70) {
-            bottomDescription.textContent = "Great job! You've built strong digital privacy protection.";
-        } else if (averageScore >= 50) {
-            bottomDescription.textContent = "Good start! Your digital privacy costume is taking shape.";
-        } else {
-            bottomDescription.textContent = "You've begun your digital privacy journey. Keep learning!";
-        }
-    }
+    // FIX 1: Remove bottom descriptions completely by hiding the element
+    const smallDescriptions = document.querySelectorAll('.small-description');
+    smallDescriptions.forEach(desc => {
+        desc.style.display = 'none';
+    });
     
     // Update the result number and progress bar with the average
     const resultNumber = document.querySelector('.result-number');
@@ -971,10 +894,26 @@ function displayFinalResults(surveyResults) {
     if (resultNumber) resultNumber.textContent = averageScore.toFixed(1);
     if (progressFill) progressFill.style.width = `${averageScore}%`;
     
-    // Add styles for the enhanced final results display
+    // Store the average score in an attribute to prevent hover issues
+    if (resultNumber) resultNumber.setAttribute('data-final-score', averageScore.toFixed(1));
+    
+    // FIX 2: Disable hover effects that change the progress bar
     const style = document.createElement('style');
     style.id = 'final-results-styles';
     style.textContent = `
+        /* Disable hover effects when in final results mode */
+        body[data-final-results="true"] .accessory:hover {
+            cursor: default !important;
+        }
+        
+        /* Make sure hover doesn't change the progress display */
+        body[data-final-results="true"] .accessory:hover ~ .panel-container .result-number,
+        body[data-final-results="true"] .accessory:hover ~ .panel-container .progress-fill {
+            /* These will override any hover effects */
+            content: attr(data-final-score) !important;
+            width: attr(data-width) !important;
+        }
+        
         /* Neutral sci-fi styling for final results panel */
         .final-results-panel {
             background: rgba(15, 25, 50, 0.85) !important;
@@ -1062,6 +1001,11 @@ function displayFinalResults(surveyResults) {
                 0 0 20px rgba(0, 240, 255, 0.5);
         }
         
+        /* Hide small descriptions in final results mode */
+        body[data-final-results="true"] .small-description {
+            display: none !important;
+        }
+        
         /* Scroll hint at the top with better styling */
         .scroll-hint {
             text-align: center;
@@ -1118,6 +1062,18 @@ function displayFinalResults(surveyResults) {
     
     // Add new styles
     document.head.appendChild(style);
+    
+    // FIX 2: Override the hover behavior for accessories
+    const accessories = document.querySelectorAll('.accessory');
+    accessories.forEach(accessory => {
+        // Disable hover behavior by removing any hover event listeners
+        accessory.style.pointerEvents = 'none';
+    });
+    
+    // Store the final progress width as an attribute to restore after hover
+    if (progressFill) {
+        progressFill.setAttribute('data-width', `${averageScore}%`);
+    }
 }
 
 // Clean up message listener - remove console logs
@@ -1146,36 +1102,4 @@ document.addEventListener('DOMContentLoaded', function() {
             // Silently handle error - removed console.error
         }
     }
-});
-
-// Add a style fix for the hover values issue without changing hover behavior
-document.addEventListener('DOMContentLoaded', function() {
-    // Add a style rule to fix hover behavior when in final results mode
-    const hoverFixStyle = document.createElement('style');
-    hoverFixStyle.id = 'hover-fix-style';
-    hoverFixStyle.textContent = `
-        /* Only apply in non-final-results mode */
-        body:not([data-final-results="true"]) .accessory:hover ~ .panel-container .result-number::after {
-            content: attr(data-hover-value);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        /* Store original widths during hover */
-        body:not([data-final-results="true"]) .progress-fill[data-current-width] {
-            transition: width 0.3s ease;
-        }
-        
-        /* When hovering over accessories, restore width when leaving */
-        body:not([data-final-results="true"]) .accessory:not(:hover) ~ .panel-container .progress-fill[data-current-width] {
-            width: attr(data-current-width);
-        }
-    `;
-    document.head.appendChild(hoverFixStyle);
 });
