@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ... rest of your existing initialization code ...
 });
 
-// Function to display final survey results
+// Function to display final survey results with enhanced styling
 function displayFinalResults(surveyResults) {
     console.log("Displaying final survey results:", surveyResults);
     
@@ -858,6 +858,14 @@ function displayFinalResults(surveyResults) {
         </div>
     `;
     
+    // Add scroll hint
+    resultsHTML += `
+        <div class="scroll-hint">
+            <div class="scroll-arrow">↓</div>
+            <div class="scroll-text">Scroll for all results</div>
+        </div>
+    `;
+    
     resultsHTML += '</div>';
     
     // Inject into the graph area
@@ -884,19 +892,20 @@ function displayFinalResults(surveyResults) {
     if (resultNumber) resultNumber.textContent = averageScore.toFixed(1);
     if (progressFill) progressFill.style.width = `${averageScore}%`;
     
-    // Add styles for the final results display
+    // Add styles for the enhanced final results display
     const style = document.createElement('style');
     style.id = 'final-results-styles';
     style.textContent = `
         .final-results {
             padding: 5px;
-            max-height: 180px;
+            max-height: 200px; /* Increased height for better scrolling */
             overflow-y: auto;
             margin-bottom: 10px;
+            position: relative; /* For scroll hint positioning */
         }
         
         .result-item {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 0.9em;
             display: flex;
             flex-wrap: wrap;
@@ -917,18 +926,30 @@ function displayFinalResults(surveyResults) {
         }
         
         .result-bar {
-            width: 100%;
-            height: 8px;
+            width: 100%; /* Full width bar */
+            height: 10px; /* Taller bar */
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 4px;
+            border-radius: 5px;
             margin-top: 3px;
+            margin-bottom: 5px;
             overflow: hidden;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
         }
         
         .result-bar-fill {
             height: 100%;
             background: linear-gradient(to right, #00f0ff, #0066ff);
-            box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+            border-radius: 5px;
+            /* Enhanced glow effect */
+            box-shadow: 
+                0 0 8px rgba(0, 240, 255, 0.7),
+                0 0 15px rgba(0, 240, 255, 0.4);
+            animation: glow-pulse 2s infinite;
+        }
+        
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(0, 240, 255, 0.7), 0 0 15px rgba(0, 240, 255, 0.4); }
+            50% { box-shadow: 0 0 12px rgba(0, 240, 255, 0.9), 0 0 20px rgba(0, 240, 255, 0.6); }
         }
         
         .result-average {
@@ -943,10 +964,43 @@ function displayFinalResults(surveyResults) {
         }
         
         .result-average .result-bar {
-            height: 10px;
+            height: 12px; /* Even taller for average */
         }
         
-        /* Subtle scrollbar styling */
+        .result-average .result-bar-fill {
+            background: linear-gradient(to right, #00f0ff, #4d00ff);
+            box-shadow: 
+                0 0 10px rgba(0, 240, 255, 0.8),
+                0 0 20px rgba(0, 240, 255, 0.5);
+        }
+        
+        /* Scroll hint styling */
+        .scroll-hint {
+            text-align: center;
+            color: rgba(0, 240, 255, 0.8);
+            font-size: 0.85em;
+            padding: 5px 0;
+            margin-top: 8px;
+            animation: fade-pulse 1.5s infinite;
+        }
+        
+        .scroll-arrow {
+            font-size: 1.2em;
+            margin-bottom: 2px;
+            animation: bounce 1.5s infinite;
+        }
+        
+        @keyframes fade-pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(3px); }
+        }
+        
+        /* Enhanced scrollbar styling */
         .final-results::-webkit-scrollbar {
             width: 6px;
         }
@@ -959,6 +1013,12 @@ function displayFinalResults(surveyResults) {
         .final-results::-webkit-scrollbar-thumb {
             background: rgba(0, 240, 255, 0.5);
             border-radius: 3px;
+            box-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+        }
+        
+        .final-results::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 240, 255, 0.7);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.7);
         }
     `;
     
