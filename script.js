@@ -1,3 +1,64 @@
+// At the beginning of your Site B JavaScript
+
+// Debug listener to catch ALL messages
+window.addEventListener('message', function(event) {
+    console.log("RAW MESSAGE RECEIVED:", event.origin);
+    console.log("MESSAGE DATA:", event.data);
+    
+    // Don't restrict by origin during testing
+    if (event.data && typeof event.data === 'object') {
+        console.log("Processing message with type:", event.data.type);
+        
+        if (event.data.type === 'questionCompleted') {
+            console.log("Question completed data received:", event.data);
+            revealGarment(event.data.questionIndex, event.data.score);
+        } else if (event.data.type === 'surveyResults') {
+            console.log("Survey results received:", event.data);
+            processSurveyData(event.data);
+        } else if (event.data.type === 'garmentUpdate') {
+            console.log("Garment update received:", event.data);
+            updateGarment(event.data.garment, event.data.stage);
+        }
+    }
+}, false);
+
+// Add this code to test the communication
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("COSTUME SITE LOADED - TESTING COMMUNICATIONS");
+    
+    // Add a test button to verify functionality
+    const testButton = document.createElement('button');
+    testButton.textContent = 'Test Garment Display';
+    testButton.style.cssText = `
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0, 240, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(0, 255, 240, 0.8);
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000;
+    `;
+    
+    // Test button will show a random garment when clicked
+    testButton.onclick = function() {
+        const accessoryKeys = Object.keys(accessories);
+        const randomAccessory = accessoryKeys[Math.floor(Math.random() * accessoryKeys.length)];
+        const randomStage = Math.floor(Math.random() * 4) + 1;
+        
+        console.log(`Testing: Revealing ${randomAccessory} at stage ${randomStage}`);
+        revealGarment(0, randomStage * 25); // This should test your revealGarment function
+        
+        showConnectionMessage("Test garment displayed!");
+    };
+    
+    document.body.appendChild(testButton);
+});
+
+
+
 // Track current image number for each accessory
 // Listen for messages from Site A
 window.addEventListener('message', function(event) {
