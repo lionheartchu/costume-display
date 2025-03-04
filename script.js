@@ -87,8 +87,8 @@ window.addEventListener('message', function(event) {
 }, false);
 
 // Function to update garment to specific stage
-function updateGarment(garmentId, stage) {
-    console.log(`Updating garment ${garmentId} to stage ${stage}`);
+function updateGarment(garmentId, stage, exactScore = null) {
+    console.log(`Updating garment ${garmentId} to stage ${stage} with score ${exactScore}`);
     
     if (!accessories[garmentId]) {
         console.error(`Unknown accessory: ${garmentId}`);
@@ -135,8 +135,8 @@ function updateGarment(garmentId, stage) {
             else if (stage === 3) element.classList.add('secure-state');
             else if (stage === 4) element.classList.add('optimal-state');
             
-            // Update the panel display
-            updatePanelWithAccessoryImage(garmentId);
+            // Update the panel display with exact score if available
+            updatePanelWithAccessoryImage(garmentId, exactScore);
             
             // Show success message
             showConnectionMessage(`Updated ${garmentId} to stage ${stage}`);
@@ -205,11 +205,12 @@ function cycleAccessoryImage(accessoryId) {
             element.classList.add('optimal-state');
         }
         
+        // When cycling manually, use stage-based calculation (no exact score)
         updatePanelWithAccessoryImage(accessoryId);
     }, 50);
 }
 
-function updatePanelWithAccessoryImage(accessoryId) {
+function updatePanelWithAccessoryImage(accessoryId, exactScore = null) {
     const accessory = accessories[accessoryId];
     const currentImage = accessory.current;
     const graphPlaceholder = document.querySelector('.graph-placeholder');
@@ -260,13 +261,26 @@ function updatePanelWithAccessoryImage(accessoryId) {
     // Update the result number and progress bar
     const resultNumber = document.querySelector('.result-number');
     const progressFill = document.querySelector('.progress-fill');
-    const percentage = (currentImage / accessory.total) * 100;
     
+    // Use the exact score from survey if provided, otherwise calculate from stage
+    let percentage;
+    if (exactScore !== null) {
+        // Use the exact value from the slider (0-100)
+        percentage = exactScore;
+    } else {
+        // Calculate based on stage as before
+        percentage = (currentImage / accessory.total) * 100;
+    }
+    
+    // Update the display
     resultNumber.textContent = percentage.toFixed(1);
     document.querySelector('.result-unit').textContent = '%';
     progressFill.style.width = `${percentage}%`;
     document.querySelector('.panel-section:last-child .small-description')
         .textContent = `System efficiency for ${accessoryId}`;
+    
+    // Log the update for debugging
+    console.log(`Updated panel for ${accessoryId}: Stage ${currentImage}, Value ${percentage.toFixed(1)}%`);
 }
 
 // Add event listeners when the document is loaded
@@ -373,10 +387,10 @@ function revealGarment(questionIndex, score) {
     console.log(`Calculated stage ${stage} for score ${score}`);
     
     // Update the garment
-    updateGarment(accessoryId, stage);
+    updateGarment(accessoryId, stage, score);
     
     // Show a message to user
-    showConnectionMessage(`Updated ${accessoryId} to stage ${stage}`);
+    showConnectionMessage(`Updated ${accessoryId} to stage ${stage} (${score.toFixed(1)}%)`);
 }
 
 // Function to map score to stage
@@ -414,7 +428,7 @@ function processSurveyData(data) {
             // Update the garment if we have a valid mapping
             if (accessoryId) {
                 const stage = mapScoreToStage(score);
-                updateGarment(accessoryId, stage);
+                updateGarment(accessoryId, stage, score);
             }
         });
         
