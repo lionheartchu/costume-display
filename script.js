@@ -96,7 +96,12 @@ function updateGarment(garmentId, stage, exactScore = null, dataType = null) {
     }
     
     // Set the current stage
-    accessories[garmentId].current = stage;
+    if (stage > 0) {
+        accessories[garmentId].current = stage;
+    } else {
+        // If stage is 0, set to 1 as default
+        accessories[garmentId].current = 1;
+    }
     
     // Mark as visible
     accessories[garmentId].visible = true;
@@ -111,70 +116,43 @@ function updateGarment(garmentId, stage, exactScore = null, dataType = null) {
         element.style.opacity = '1';
         element.style.display = 'block'; // Ensure it's displayed
         
+        // Use current stage from accessories object to ensure consistency
+        const currentStage = accessories[garmentId].current;
+        
         // Debug: Log the image path we're trying to use
-        const imagePath = `costume/${garmentId}${stage}.png`;
+        const imagePath = `costume/${garmentId}${currentStage}.png`;
         console.log(`Setting image source to: ${imagePath}`);
         
-        // Try to preload the image to verify it exists
-        const img = new Image();
-        img.onload = function() {
-            console.log(`Successfully loaded image: ${imagePath}`);
-            // Now set the actual element source
-            element.src = imagePath;
-            
-            // Animate the appearance
-            element.style.transition = 'opacity 0.5s ease';
-            element.style.opacity = '1';
-            
-            // Reset all state classes
-            element.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
-            
-            // Add appropriate class based on the stage
-            if (stage === 1) element.classList.add('warning-state');
-            else if (stage === 2) element.classList.add('caution-state');
-            else if (stage === 3) element.classList.add('secure-state');
-            else if (stage === 4) element.classList.add('optimal-state');
-            
-            // Update the panel display with exact score and data type if available
-            updatePanelWithAccessoryImage(garmentId, exactScore, dataType);
-            
-            // Show success message
-            showConnectionMessage(`Updated ${garmentId} to stage ${stage}`);
-        };
+        // Now set the actual element source
+        element.src = imagePath;
         
-        img.onerror = function() {
-            console.error(`Failed to load image: ${imagePath}`);
-            showConnectionMessage(`Error loading ${garmentId} stage ${stage}`, true);
-            
-            // Show what image paths we're looking for
-            console.log(`Attempted path: ${imagePath}`);
-            console.log('Checking file structure...');
-            
-            // Try alternative paths
-            const altPaths = [
-                `costume/${garmentId}_${stage}.png`,
-                `costume/${garmentId}-${stage}.png`,
-                `costume/${garmentId}/${stage}.png`,
-                `images/${garmentId}${stage}.png`
-            ];
-            
-            console.log(`Alternative paths to check: ${altPaths.join(', ')}`);
-        };
+        // Reset all state classes
+        element.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
         
-        img.src = imagePath;
+        // Add appropriate class based on the stage
+        if (currentStage === 1) element.classList.add('warning-state');
+        else if (currentStage === 2) element.classList.add('caution-state');
+        else if (currentStage === 3) element.classList.add('secure-state');
+        else if (currentStage === 4) element.classList.add('optimal-state');
+        
+        // Update the panel display with exact score and data type if available
+        updatePanelWithAccessoryImage(garmentId, exactScore, dataType);
+        
+        // Show success message
+        showConnectionMessage(`Updated ${garmentId} to stage ${currentStage}`);
     } else {
         console.error(`Element with ID ${garmentId} not found`);
     }
 }
 
 const accessories = {
-    brain: { current: 1, total: 4, visible: false },
-    eyes: { current: 1, total: 4, visible: false },
-    ears: { current: 1, total: 4, visible: false },
-    hands: { current: 1, total: 4, visible: false },
-    heart: { current: 1, total: 4, visible: false },
-    feet: { current: 1, total: 4, visible: false },
-    bio: { current: 1, total: 4, visible: false }
+    brain: { current: 0, total: 4, visible: false },
+    eyes: { current: 0, total: 4, visible: false },
+    ears: { current: 0, total: 4, visible: false },
+    hands: { current: 0, total: 4, visible: false },
+    heart: { current: 0, total: 4, visible: false },
+    feet: { current: 0, total: 4, visible: false },
+    bio: { current: 0, total: 4, visible: false }
 };
 
 function cycleAccessoryImage(accessoryId) {
@@ -256,7 +234,7 @@ function enhancePanelUI() {
         
         /* Enhanced accessory status subtitle */
         #accessoryStatusSubtitle {
-            font-size: 1.2em !important;
+            font-size: 1.4em !important;
             color: rgba(255, 255, 255, 0.9) !important;
             font-weight: bold !important;
             letter-spacing: 1px !important;
@@ -291,6 +269,19 @@ function enhancePanelUI() {
         .panel-accessory-image {
             max-height: 150px !important;
             filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) !important;
+        }
+        
+        /* Make bottom description larger */
+        .panel-section:last-child .small-description {
+            font-size: 1.1em !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin-top: 10px !important;
+        }
+        
+        /* Make all small descriptions larger */
+        .small-description {
+            font-size: 1.1em !important;
+            color: rgba(255, 255, 255, 0.85) !important;
         }
     `;
     document.head.appendChild(style);
@@ -550,86 +541,115 @@ document.addEventListener('DOMContentLoaded', function() {
     }, false);
 });
 
-// Add a function to display diagnostic information
-function displayDiagnostics() {
-    console.log("DISPLAYING DIAGNOSTICS");
+// Simplified function to apply reasonable styling
+function applyFuturisticStyles() {
+    console.log("Applying futuristic panel styles with moderate text sizes");
     
-    // Create diagnostic overlay
-    const diagnostics = document.createElement('div');
-    diagnostics.id = 'diagnosticsOverlay';
-    diagnostics.style.cssText = `
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        background: rgba(0, 0, 0, 0.8);
-        color: #00f0ff;
-        padding: 15px;
-        border-radius: 5px;
-        z-index: 1000;
-        font-family: monospace;
-        max-width: 80%;
-        max-height: 80%;
-        overflow: auto;
-    `;
+    // Create a separate style element for our new styles
+    const futuristicStyles = document.createElement('style');
+    futuristicStyles.id = 'futuristic-panel-styles'; // ID to avoid duplicates
     
-    // Gather information about all accessories
-    let info = "<h3>Accessories Diagnostics</h3>";
+    // Remove any previous version if it exists
+    const oldStyles = document.getElementById('futuristic-panel-styles');
+    if (oldStyles) {
+        oldStyles.remove();
+    }
     
-    Object.keys(accessories).forEach(id => {
-        const element = document.getElementById(id);
-        const status = element ? "Found" : "NOT FOUND";
-        const visibility = element ? 
-            `visibility: ${element.style.visibility}, opacity: ${element.style.opacity}, display: ${element.style.display}` : 
-            "N/A";
+    futuristicStyles.textContent = `
+        /* Futuristic monospace font for the entire panel */
+        .panel-container, .panel-section, .result-number, #dataTypeName, #accessoryStatusSubtitle {
+            font-family: 'Courier New', monospace !important;
+        }
         
-        info += `<div style="margin-bottom:10px;">
-            <strong>${id}</strong>: ${status}<br>
-            Current stage: ${accessories[id].current}<br>
-            Visible: ${accessories[id].visible}<br>
-            Style: ${visibility}<br>
-            Image path: costume/${id}${accessories[id].current}.png
-        </div>`;
-    });
-    
-    diagnostics.innerHTML = info + `
-        <button id="closeBtn" style="background:#00f0ff; color:black; border:none; padding:5px 10px; margin-top:10px;">
-            Close
-        </button>
+        /* Make panel lighter and more futuristic */
+        .panel-container {
+            background: rgba(15, 25, 50, 0.7) !important;
+            border: 1px solid rgba(0, 240, 255, 0.3) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
+            padding: 15px 25px !important;
+            max-height: 420px !important;
+            width: 380px !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        
+        /* Animated border effect */
+        @keyframes borderPulse {
+            0% { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+            50% { border-color: rgba(0, 240, 255, 0.7); box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); }
+            100% { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+        }
+        
+        .panel-container {
+            animation: borderPulse 4s infinite;
+        }
+        
+        /* Enhanced data type title with moderate size */
+        #dataTypeName {
+            font-size: 1.7em !important;
+            color: rgba(0, 240, 255, 1) !important;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
+            letter-spacing: 1px !important;
+            margin-bottom: 4px !important;
+        }
+        
+        /* Enhanced accessory status subtitle */
+        #accessoryStatusSubtitle {
+            font-size: 1.2em !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: bold !important;
+            letter-spacing: 1px !important;
+            margin-top: 2px !important;
+            margin-bottom: 12px !important;
+            background: rgba(0, 0, 0, 0.2) !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            display: inline-block !important;
+        }
+        
+        /* Futuristic progress bar */
+        .progress-bar {
+            height: 12px !important;
+            background: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid rgba(0, 240, 255, 0.3) !important;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(to right, #00f0ff, #0066ff) !important;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.7) !important;
+        }
+        
+        /* Results number styling */
+        .result-number {
+            font-size: 2em !important;
+            color: rgba(0, 240, 255, 1) !important;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
+        }
+        
+        /* Panel image styling */
+        .panel-accessory-image {
+            max-height: 150px !important;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) !important;
+        }
+        
+        /* Make bottom description reasonably sized */
+        .panel-section:last-child .small-description {
+            font-size: 0.95em !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin-top: 10px !important;
+        }
+        
+        /* Make all small descriptions moderately sized */
+        .small-description {
+            font-size: 0.95em !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
     `;
     
-    document.body.appendChild(diagnostics);
-    
-    // Add close button functionality
-    document.getElementById('closeBtn').addEventListener('click', () => {
-        document.body.removeChild(diagnostics);
-    });
+    document.head.appendChild(futuristicStyles);
 }
 
-// Add diagnostic button
-document.addEventListener('DOMContentLoaded', function() {
-    // ... existing code ...
-    
-    // Add diagnostics button
-    const diagButton = document.createElement('button');
-    diagButton.textContent = 'Diagnostics';
-    diagButton.style.cssText = `
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        background: rgba(255, 0, 0, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 0, 0, 0.8);
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 1000;
-    `;
-    
-    diagButton.onclick = displayDiagnostics;
-    document.body.appendChild(diagButton);
-});
-
-// Modified function to update panel with better text
+// Update the panel UI function with moderate text sizes
 function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType = null) {
     const accessory = accessories[accessoryId];
     const currentImage = accessory.current;
@@ -753,3 +773,52 @@ function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType 
     // Log the update for debugging
     console.log(`Updated panel for ${accessoryId}: Stage ${currentImage}, Value ${percentage.toFixed(1)}%`);
 }
+
+// Fix for costume visibility and stages - call this at document load
+function fixCostumeDisplay() {
+    console.log("Applying costume display fixes");
+    
+    // Reset all accessories to ensure proper stage handling
+    for (const accessoryId in accessories) {
+        // Only reset if not explicitly set already
+        if (accessories[accessoryId].current === 0) {
+            console.log(`Resetting ${accessoryId} display state`);
+            
+            // Hide initially
+            const element = document.getElementById(accessoryId);
+            if (element) {
+                element.style.visibility = 'hidden';
+                element.style.opacity = '0';
+                element.style.display = 'none';
+            }
+        } else {
+            console.log(`${accessoryId} already at stage ${accessories[accessoryId].current}, ensuring visibility`);
+            
+            // If it has a stage, make sure it's visible
+            const element = document.getElementById(accessoryId);
+            if (element) {
+                element.style.visibility = 'visible';
+                element.style.opacity = '1';
+                element.style.display = 'block';
+                
+                // Set correct image
+                const stage = accessories[accessoryId].current;
+                element.src = `costume/${accessoryId}${stage}.png`;
+                console.log(`Set ${accessoryId} to image: costume/${accessoryId}${stage}.png`);
+            }
+        }
+    }
+}
+
+// Call both fixes when the document loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("COSTUME SITE LOADED - APPLYING FIXES");
+    
+    // Apply styling with moderate text sizes
+    applyFuturisticStyles();
+    
+    // Fix costume display
+    fixCostumeDisplay();
+    
+    // ... rest of your existing initialization code ...
+});
