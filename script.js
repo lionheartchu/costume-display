@@ -369,3 +369,34 @@ function initializeGarments() {
         }
     });
 }
+
+// In Site B (costume display)
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Costume site loaded, listening for messages");
+    
+    // Check for URL parameters first (fallback method)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('questionData')) {
+        try {
+            const questionData = JSON.parse(urlParams.get('questionData'));
+            console.log("Received data from URL params:", questionData);
+            if (questionData.type === 'questionCompleted') {
+                revealGarment(questionData.questionIndex, questionData.score);
+            }
+        } catch (e) {
+            console.error("Error parsing URL data:", e);
+        }
+    }
+    
+    // Listen for postMessage events
+    window.addEventListener('message', function(event) {
+        // Accept any origin during testing, tighten this later
+        console.log("Received message from:", event.origin);
+        console.log("Message data:", event.data);
+        
+        if (event.data && event.data.type === 'questionCompleted') {
+            console.log("Processing question completion");
+            revealGarment(event.data.questionIndex, event.data.score);
+        }
+    }, false);
+});
