@@ -804,10 +804,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ... rest of your existing initialization code ...
 });
 
-// Enhanced function to display final survey results
+// Enhanced function to display final survey results with cleaned code
 function displayFinalResults(surveyResults) {
-    console.log("Displaying final survey results:", surveyResults);
-    
     // Get the panel elements
     const graphPlaceholder = document.querySelector('.graph-placeholder');
     const dataTypeName = document.getElementById('dataTypeName');
@@ -822,7 +820,7 @@ function displayFinalResults(surveyResults) {
         subtitle.textContent = "FINAL RESULTS";
     }
     
-    // FIX 1: Remove all state classes from graph and panel
+    // Remove all state classes from graph and panel
     graphPlaceholder.classList.remove('graph-warning', 'graph-caution', 'graph-secure', 'graph-optimal');
     if (panelContainer) {
         panelContainer.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
@@ -833,7 +831,7 @@ function displayFinalResults(surveyResults) {
     // Create HTML for the results summary
     let resultsHTML = '<div class="final-results">';
     
-    // FIX 3: Add scroll hint at the TOP
+    // Add scroll hint at the TOP
     resultsHTML += `
         <div class="scroll-hint">
             <div class="scroll-arrow">↓</div>
@@ -880,9 +878,10 @@ function displayFinalResults(surveyResults) {
     // Inject into the graph area
     graphPlaceholder.innerHTML = resultsHTML;
     
-    // Update the bottom description
+    // Update the bottom description - remove stage descriptions
     const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
     if (bottomDescription) {
+        // Remove any text about stages and replace with final summary
         if (averageScore >= 90) {
             bottomDescription.textContent = "Amazing work! Your digital privacy protection is exceptional!";
         } else if (averageScore >= 70) {
@@ -905,20 +904,20 @@ function displayFinalResults(surveyResults) {
     const style = document.createElement('style');
     style.id = 'final-results-styles';
     style.textContent = `
-        /* FIX 1: Neutral sci-fi styling for final results panel */
+        /* Neutral sci-fi styling for final results panel */
         .final-results-panel {
-            background: rgba(15, 25, 50, 0.85) !important; /* Slightly more transparent */
+            background: rgba(15, 25, 50, 0.85) !important;
             border: 1px solid rgba(0, 240, 255, 0.5) !important;
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.3) !important;
+            max-height: none !important; /* Remove any height restriction */
         }
         
         .final-results {
             padding: 5px;
-            max-height: 200px;
+            max-height: 250px !important; /* INCREASED height */
             overflow-y: auto;
             margin-bottom: 10px;
             position: relative;
-            /* FIX 2: Add padding at the top and bottom */
             padding-top: 10px !important;
             padding-bottom: 10px !important;
         }
@@ -992,7 +991,7 @@ function displayFinalResults(surveyResults) {
                 0 0 20px rgba(0, 240, 255, 0.5);
         }
         
-        /* FIX 3: Scroll hint at the top with better styling */
+        /* Scroll hint at the top with better styling */
         .scroll-hint {
             text-align: center;
             color: rgba(0, 240, 255, 0.8);
@@ -1049,3 +1048,31 @@ function displayFinalResults(surveyResults) {
     // Add new styles
     document.head.appendChild(style);
 }
+
+// Clean up message listener - remove console logs
+document.addEventListener('DOMContentLoaded', function() {
+    // Listen for postMessage events
+    window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'questionCompleted') {
+            revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
+        } else if (event.data && event.data.type === 'surveyResults') {
+            // Transform the data format to match what displayFinalResults expects
+            const formattedResults = event.data.detailedResults || {};
+            displayFinalResults(formattedResults);
+        }
+    }, false);
+    
+    // Check for URL parameters (for direct navigation with results)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('surveyData')) {
+        try {
+            const surveyData = JSON.parse(urlParams.get('surveyData'));
+            if (surveyData.type === 'surveyResults') {
+                const formattedResults = surveyData.detailedResults || {};
+                displayFinalResults(formattedResults);
+            }
+        } catch (e) {
+            // Silently handle error - removed console.error
+        }
+    }
+});
