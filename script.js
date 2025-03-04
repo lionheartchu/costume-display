@@ -475,23 +475,9 @@ function initializeGarments() {
     });
 }
 
-// In Site B (costume display)
+// Add this listener to handle the survey results message type
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Costume site loaded, listening for messages");
-    
-    // Check for URL parameters first (fallback method)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('questionData')) {
-        try {
-            const questionData = JSON.parse(urlParams.get('questionData'));
-            console.log("Received data from URL params:", questionData);
-            if (questionData.type === 'questionCompleted') {
-                revealGarment(questionData.questionIndex, questionData.score);
-            }
-        } catch (e) {
-            console.error("Error parsing URL data:", e);
-        }
-    }
     
     // Listen for postMessage events
     window.addEventListener('message', function(event) {
@@ -501,12 +487,33 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (event.data && event.data.type === 'questionCompleted') {
             console.log("Processing question completion");
-            revealGarment(event.data.questionIndex, event.data.score);
-        } else if (event.data && event.data.type === 'allQuestionsCompleted') {
+            revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
+        } else if (event.data && event.data.type === 'surveyResults') {
+            // Site A is sending 'surveyResults' instead of 'allQuestionsCompleted'
             console.log("All questions completed, showing final results");
-            displayFinalResults(event.data.surveyResults);
+            
+            // Transform the data format to match what displayFinalResults expects
+            const formattedResults = event.data.detailedResults || {};
+            displayFinalResults(formattedResults);
         }
     }, false);
+    
+    // Check for URL parameters (for direct navigation with results)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('surveyData')) {
+        try {
+            const surveyData = JSON.parse(urlParams.get('surveyData'));
+            console.log("Received survey data from URL params:", surveyData);
+            
+            if (surveyData.type === 'surveyResults') {
+                // Transform the data format to match what displayFinalResults expects
+                const formattedResults = surveyData.detailedResults || {};
+                displayFinalResults(formattedResults);
+            }
+        } catch (e) {
+            console.error("Error parsing URL survey data:", e);
+        }
+    }
 });
 
 // Modified function to apply styling with shorter panel and less obvious stage 4
