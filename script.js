@@ -1074,21 +1074,42 @@ function displayFinalResults(surveyResults) {
     }
 }
 
+// * - firebase section - *
 
-// Clean up message listener - remove console logs
-document.addEventListener('DOMContentLoaded', function() {
-    // Listen for postMessage events
-    window.addEventListener('message', function(event) {
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("🎬 DOM fully loaded");
+
+    // ✅ Firebase session tracker
+    const sessionsRef = window.databaseRef(window.database, 'sessions');
+    window.onValue(sessionsRef, (snapshot) => {
+        const sessions = snapshot.val();
+        if (!sessions) return;
+
+        const sortedSessions = Object.entries(sessions).sort((a, b) => {
+            const tsA = a[1]?.timestamp || 0;
+            const tsB = b[1]?.timestamp || 0;
+            return tsB - tsA;
+        });
+
+        const latestSessionId = sortedSessions[0][0];
+        if (latestSessionId !== currentSessionId) {
+            currentSessionId = latestSessionId;
+            resetCostumeDisplay();
+            setupFirebaseSession(latestSessionId);
+        }
+    });
+
+    // ✅ Also handle messages from postMessage (if still used)
+    window.addEventListener('message', function (event) {
         if (event.data && event.data.type === 'questionCompleted') {
             revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
         } else if (event.data && event.data.type === 'surveyResults') {
-            // Transform the data format to match what displayFinalResults expects
             const formattedResults = event.data.detailedResults || {};
             displayFinalResults(formattedResults);
         }
-    }, false);
-    
-    // Check for URL parameters (for direct navigation with results)
+    });
+
+    // ✅ If you support URL param display
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('surveyData')) {
         try {
@@ -1098,10 +1119,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayFinalResults(formattedResults);
             }
         } catch (e) {
-            // Silently handle error - removed console.error
+            // fail silently
         }
     }
 });
+
 
 function resetCostumeDisplay() {
     console.log("🔁 Resetting display to clean state...");
@@ -1150,37 +1172,21 @@ function resetCostumeDisplay() {
     if (progressFill) progressFill.style.width = '0%';
 }
 
-
 let currentSessionId = null;
 
-document.addEventListener('DOMContentLoaded', function () {
-    const sessionsRef = window.databaseRef(window.database, 'sessions');
-
-    window.onValue(sessionsRef, (snapshot) => {
-        const sessions = snapshot.val();
-        if (!sessions) return;
-
-        const sortedSessions = Object.entries(sessions).sort((a, b) => {
-            const tsA = a[1]?.timestamp || 0;
-            const tsB = b[1]?.timestamp || 0;
-            return tsB - tsA;
-        });
-
-        const latestSessionId = sortedSessions[0][0];
-
-        if (latestSessionId !== currentSessionId) {
-            currentSessionId = latestSessionId;
-            resetCostumeDisplay();
-            setupFirebaseSession(latestSessionId);
-        }
-    });
-});
+let currentQuestionsUnsubscribe = null;
+let currentResultsUnsubscribe = null;
 
 function setupFirebaseSession(sessionId) {
     console.log("📡 Listening to session:", sessionId);
 
+    // ✅ Step 1: 清理旧的监听器
+    if (currentQuestionsUnsubscribe) currentQuestionsUnsubscribe();
+    if (currentResultsUnsubscribe) currentResultsUnsubscribe();
+
+    // ✅ Step 2: 设置新的监听器并保存返回值
     const questionsRef = window.databaseRef(window.database, `sessions/${sessionId}/questions`);
-    window.onChildAdded(questionsRef, (snapshot) => {
+    currentQuestionsUnsubscribe = window.onChildAdded(questionsRef, (snapshot) => {
         const questionData = snapshot.val();
         if (questionData) {
             revealGarment({
@@ -1191,7 +1197,7 @@ function setupFirebaseSession(sessionId) {
     });
 
     const finalResultsRef = window.databaseRef(window.database, `sessions/${sessionId}/finalResults`);
-    window.onValue(finalResultsRef, (snapshot) => {
+    currentResultsUnsubscribe = window.onValue(finalResultsRef, (snapshot) => {
         const finalResults = snapshot.val();
         if (finalResults?.detailedResults) {
             displayFinalResults(finalResults.detailedResults);
