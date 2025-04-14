@@ -1179,17 +1179,6 @@ document.addEventListener('DOMContentLoaded', function () {
 function setupFirebaseSession(sessionId) {
     console.log("📡 Listening to session:", sessionId);
 
-    const finalResultsRef = window.databaseRef(window.database, `sessions/${sessionId}/finalResults`);
-    window.onValue(finalResultsRef, (snapshot) => {
-        const finalResults = snapshot.val();
-        if (finalResults?.detailedResults) {
-            displayFinalResults(finalResults.detailedResults);
-        }
-    });
-}
-function setupFirebaseSession(sessionId) {
-    console.log("📡 Listening to session:", sessionId);
-
     const questionsRef = window.databaseRef(window.database, `sessions/${sessionId}/questions`);
     window.onChildAdded(questionsRef, (snapshot) => {
         const questionData = snapshot.val();
