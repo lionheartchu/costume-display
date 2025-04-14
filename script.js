@@ -1,5 +1,3 @@
-// At the beginning of your Site B JavaScript
-
 // Debug listener to catch ALL messages
 window.addEventListener('message', function(event) {
     console.log("RAW MESSAGE RECEIVED:", event.origin);
@@ -1103,3 +1101,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Wait for Firebase to be initialized
+document.addEventListener('DOMContentLoaded', function() {
+    // Get session ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session');
+
+    if (!sessionId) {
+        console.log("No session ID found in URL");
+        return;
+    }
+
+    console.log("Setting up Firebase listeners for session:", sessionId);
+    
+    // Listen for new question responses
+    const questionsRef = window.databaseRef(window.database, `sessions/${sessionId}/questions`);
+    window.onChildAdded(questionsRef, (snapshot) => {
+        const questionData = snapshot.val();
+        console.log("New question data received:", questionData);
+        
+        if (questionData && questionData.questionIndex !== undefined && 
+            questionData.score !== undefined && questionData.dataType) {
+            
+            // Process the question data to reveal garment
+            revealGarment({
+                dataType: questionData.dataType,
+                score: questionData.score
+            });
+        }
+    });
+
+    // Listen for final results
+    const finalResultsRef = window.databaseRef(window.database, `sessions/${sessionId}/finalResults`);
+    window.onValue(finalResultsRef, (snapshot) => {
+        const finalResults = snapshot.val();
+        console.log("Final results received:", finalResults);
+        
+        if (finalResults && finalResults.detailedResults) {
+            displayFinalResults(finalResults.detailedResults);
+        }
+    });
+});
+
+// 可选：封装为函数（目前你是直接写在 DOMContentLoaded 里也没问题）
+function setupFirebaseSession(sessionId) {
+    console.log("Setting up Firebase listeners for session:", sessionId);
+    
+    const questionsRef = window.databaseRef(window.database, `sessions/${sessionId}/questions`);
+    window.onChildAdded(questionsRef, (snapshot) => {
+        const questionData = snapshot.val();
+        if (questionData && questionData.questionIndex !== undefined && 
+            questionData.score !== undefined && questionData.dataType) {
+            revealGarment({
+                dataType: questionData.dataType,
+                score: questionData.score
+            });
+        }
+    });
+
+    const finalResultsRef = window.databaseRef(window.database, `sessions/${sessionId}/finalResults`);
+    window.onValue(finalResultsRef, (snapshot) => {
+        const finalResults = snapshot.val();
+        if (finalResults && finalResults.detailedResults) {
+            displayFinalResults(finalResults.detailedResults);
+        }
+    });
+}

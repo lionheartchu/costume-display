@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Health Information Costume Display</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Remove the old Firebase scripts -->
 </head>
 <body>
     <div class="main-container">
@@ -63,7 +64,34 @@
         </div>
     </div>
 
+    <!-- Add Firebase scripts at the end of body -->
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+        import { getDatabase, ref, onChildAdded, onValue } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js';
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYAyOdx3Ja0Z0wMptzm2Mab72QpeORLLI",
+            authDomain: "dataskin-install.firebaseapp.com",
+            databaseURL: "https://dataskin-install-default-rtdb.firebaseio.com",
+            projectId: "dataskin-install",
+            storageBucket: "dataskin-install.firebasestorage.app",
+            messagingSenderId: "58568018284",
+            appId: "1:58568018284:web:2a0df076745a8deb18cb49",
+            measurementId: "G-FJBX6ZJGZL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Make database available globally
+        window.database = database;
+        window.databaseRef = ref;
+        window.onChildAdded = onChildAdded;
+        window.onValue = onValue;
+    </script>
     <script src="script.js"></script>
 </body>
-
 </html>
