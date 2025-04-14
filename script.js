@@ -1105,18 +1105,28 @@ document.addEventListener('DOMContentLoaded', function() {
 // Wait for Firebase to be initialized
 document.addEventListener('DOMContentLoaded', function () {
     const sessionsRef = window.databaseRef(window.database, 'sessions');
+    let currentSessionId = null;
 
-    // Keep track to avoid reconnecting multiple times
-    let isConnected = false;
+    window.onValue(sessionsRef, (snapshot) => {
+        const sessions = snapshot.val();
+        if (!sessions) return;
 
-    window.onChildAdded(sessionsRef, (snapshot) => {
-        if (isConnected) return;
+        // Get the latest session by timestamp inside each session
+        const sessionEntries = Object.entries(sessions);
 
-        const latestSessionId = snapshot.key;
-        console.log("Auto-detected latest session:", latestSessionId);
-        isConnected = true;
+        // Sort by timestamp inside each session object
+        const sorted = sessionEntries.sort((a, b) => {
+            const tsA = a[1]?.timestamp || 0;
+            const tsB = b[1]?.timestamp || 0;
+            return tsB - tsA; // Descending
+        });
 
-        setupFirebaseSession(latestSessionId); // ⬅️ 你定义好的函数
+        const latestSessionId = sorted[0][0];
+        if (latestSessionId !== currentSessionId) {
+            console.log("Switching to latest session:", latestSessionId);
+            currentSessionId = latestSessionId;
+            setupFirebaseSession(latestSessionId);
+        }
     });
 });
 
