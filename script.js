@@ -1102,6 +1102,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+function resetCostumeDisplay() {
+    console.log("Resetting display to clean state...");
+
+    // 清空所有服饰显示
+    Object.keys(accessories).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.opacity = '0';
+            el.style.visibility = 'hidden';
+            el.style.display = 'none';
+            el.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
+        }
+        accessories[id].current = 0;
+        accessories[id].visible = false;
+    });
+
+    // 重置面板
+    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    if (graphPlaceholder) {
+        graphPlaceholder.innerHTML = '<div class="initial-message">Waiting for the latest survey to complete...</div>';
+    }
+
+    const dataTypeName = document.getElementById('dataTypeName');
+    if (dataTypeName) dataTypeName.textContent = 'Awaiting Data';
+
+    const subtitle = document.getElementById('accessoryStatusSubtitle');
+    if (subtitle) subtitle.textContent = '';
+
+    const resultNumber = document.querySelector('.result-number');
+    const progressFill = document.querySelector('.progress-fill');
+    if (resultNumber) resultNumber.textContent = '--';
+    if (progressFill) progressFill.style.width = '0%';
+
+    document.body.removeAttribute('data-final-results');
+}
+
 // Wait for Firebase to be initialized
 document.addEventListener('DOMContentLoaded', function () {
     const sessionsRef = window.databaseRef(window.database, 'sessions');
@@ -1125,8 +1161,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (latestSessionId !== currentSessionId) {
             console.log("Switching to latest session:", latestSessionId);
             currentSessionId = latestSessionId;
+        
+            resetCostumeDisplay(); // ✅ 加上这一句
             setupFirebaseSession(latestSessionId);
-        }
+        }        
     });
 });
 
