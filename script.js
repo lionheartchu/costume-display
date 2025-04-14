@@ -1102,10 +1102,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Reset display to clean state
 function resetCostumeDisplay() {
-    console.log("Resetting display to clean state...");
+    console.log("🔁 Resetting display to clean state...");
 
-    // 清空所有服饰显示
+    // Reset garment images and state
     Object.keys(accessories).forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -1118,7 +1119,7 @@ function resetCostumeDisplay() {
         accessories[id].visible = false;
     });
 
-    // 重置面板
+    // Reset panel
     const graphPlaceholder = document.querySelector('.graph-placeholder');
     if (graphPlaceholder) {
         graphPlaceholder.innerHTML = '<div class="initial-message">Waiting for the latest survey to complete...</div>';
@@ -1138,45 +1139,14 @@ function resetCostumeDisplay() {
     document.body.removeAttribute('data-final-results');
 }
 
-// Wait for Firebase to be initialized
-document.addEventListener('DOMContentLoaded', function () {
-    const sessionsRef = window.databaseRef(window.database, 'sessions');
-    let currentSessionId = null;
-
-    window.onValue(sessionsRef, (snapshot) => {
-        const sessions = snapshot.val();
-        if (!sessions) return;
-
-        // Get the latest session by timestamp inside each session
-        const sessionEntries = Object.entries(sessions);
-
-        // Sort by timestamp inside each session object
-        const sorted = sessionEntries.sort((a, b) => {
-            const tsA = a[1]?.timestamp || 0;
-            const tsB = b[1]?.timestamp || 0;
-            return tsB - tsA; // Descending
-        });
-
-        const latestSessionId = sorted[0][0];
-        if (latestSessionId !== currentSessionId) {
-            console.log("Switching to latest session:", latestSessionId);
-            currentSessionId = latestSessionId;
-        
-            resetCostumeDisplay(); // ✅ 加上这一句
-            setupFirebaseSession(latestSessionId);
-        }        
-    });
-});
-
-// 可选：封装为函数（目前你是直接写在 DOMContentLoaded 里也没问题）
+// Setup Firebase listeners for specific session
 function setupFirebaseSession(sessionId) {
-    console.log("Setting up Firebase listeners for session:", sessionId);
-    
+    console.log("🎯 Listening to Firebase session:", sessionId);
+
     const questionsRef = window.databaseRef(window.database, `sessions/${sessionId}/questions`);
     window.onChildAdded(questionsRef, (snapshot) => {
         const questionData = snapshot.val();
-        if (questionData && questionData.questionIndex !== undefined && 
-            questionData.score !== undefined && questionData.dataType) {
+        if (questionData && questionData.dataType && questionData.score !== undefined) {
             revealGarment({
                 dataType: questionData.dataType,
                 score: questionData.score
@@ -1192,3 +1162,33 @@ function setupFirebaseSession(sessionId) {
         }
     });
 }
+
+// Listen to latest session changes and auto-reset
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("📡 Site B ready: listening for latest Firebase session");
+
+    const sessionsRef = window.databaseRef(window.database, 'sessions');
+    let currentSessionId = null;
+
+    window.onValue(sessionsRef, (snapshot) => {
+        const sessions = snapshot.val();
+        if (!sessions) return;
+
+        const sessionEntries = Object.entries(sessions);
+        const sorted = sessionEntries.sort((a, b) => {
+            const tsA = a[1]?.timestamp || 0;
+            const tsB = b[1]?.timestamp || 0;
+            return tsB - tsA; // 最新在最前
+        });
+
+        const latestSessionId = sorted[0][0];
+
+        if (latestSessionId !== currentSessionId) {
+            console.log("🆕 New session detected:", latestSessionId);
+            currentSessionId = latestSessionId;
+
+            resetCostumeDisplay();
+            setupFirebaseSession(latestSessionId);
+        }
+    });
+});
