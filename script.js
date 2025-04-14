@@ -1139,14 +1139,38 @@ function resetCostumeDisplay() {
     document.body.removeAttribute('data-final-results');
 }
 
-// Setup Firebase listeners for specific session
+let currentSessionId = null;
+
+document.addEventListener('DOMContentLoaded', function () {
+    const sessionsRef = window.databaseRef(window.database, 'sessions');
+
+    window.onValue(sessionsRef, (snapshot) => {
+        const sessions = snapshot.val();
+        if (!sessions) return;
+
+        const sortedSessions = Object.entries(sessions).sort((a, b) => {
+            const tsA = a[1]?.timestamp || 0;
+            const tsB = b[1]?.timestamp || 0;
+            return tsB - tsA;
+        });
+
+        const latestSessionId = sortedSessions[0][0];
+
+        if (latestSessionId !== currentSessionId) {
+            currentSessionId = latestSessionId;
+            resetCostumeDisplay();
+            setupFirebaseSession(latestSessionId);
+        }
+    });
+});
+
 function setupFirebaseSession(sessionId) {
-    console.log("🎯 Listening to Firebase session:", sessionId);
+    console.log("📡 Listening to session:", sessionId);
 
     const questionsRef = window.databaseRef(window.database, `sessions/${sessionId}/questions`);
     window.onChildAdded(questionsRef, (snapshot) => {
         const questionData = snapshot.val();
-        if (questionData && questionData.dataType && questionData.score !== undefined) {
+        if (questionData) {
             revealGarment({
                 dataType: questionData.dataType,
                 score: questionData.score
@@ -1157,38 +1181,8 @@ function setupFirebaseSession(sessionId) {
     const finalResultsRef = window.databaseRef(window.database, `sessions/${sessionId}/finalResults`);
     window.onValue(finalResultsRef, (snapshot) => {
         const finalResults = snapshot.val();
-        if (finalResults && finalResults.detailedResults) {
+        if (finalResults?.detailedResults) {
             displayFinalResults(finalResults.detailedResults);
         }
     });
 }
-
-// Listen to latest session changes and auto-reset
-document.addEventListener('DOMContentLoaded', function () {
-    console.log("📡 Site B ready: listening for latest Firebase session");
-
-    const sessionsRef = window.databaseRef(window.database, 'sessions');
-    let currentSessionId = null;
-
-    window.onValue(sessionsRef, (snapshot) => {
-        const sessions = snapshot.val();
-        if (!sessions) return;
-
-        const sessionEntries = Object.entries(sessions);
-        const sorted = sessionEntries.sort((a, b) => {
-            const tsA = a[1]?.timestamp || 0;
-            const tsB = b[1]?.timestamp || 0;
-            return tsB - tsA; // 最新在最前
-        });
-
-        const latestSessionId = sorted[0][0];
-
-        if (latestSessionId !== currentSessionId) {
-            console.log("🆕 New session detected:", latestSessionId);
-            currentSessionId = latestSessionId;
-
-            resetCostumeDisplay();
-            setupFirebaseSession(latestSessionId);
-        }
-    });
-});
