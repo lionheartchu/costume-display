@@ -1074,6 +1074,7 @@ function displayFinalResults(surveyResults) {
     }
 }
 
+
 // Clean up message listener - remove console logs
 document.addEventListener('DOMContentLoaded', function() {
     // Listen for postMessage events
@@ -1102,11 +1103,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Reset display to clean state
 function resetCostumeDisplay() {
     console.log("🔁 Resetting display to clean state...");
 
-    // Reset garment images and state
+    // 移除 final result 状态和样式
+    const graphPlaceholder = document.querySelector('.graph-placeholder');
+    if (graphPlaceholder) {
+        graphPlaceholder.classList.remove('final-results');
+        graphPlaceholder.innerHTML = '<div class="initial-message">Waiting for the latest survey to complete...</div>';
+    }
+
+    const panelContainer = document.querySelector('.panel-container');
+    if (panelContainer) {
+        panelContainer.classList.remove('final-results-panel');
+    }
+
+    const finalStyle = document.getElementById('final-results-styles');
+    if (finalStyle) {
+        finalStyle.remove();
+    }
+
+    document.body.removeAttribute('data-final-results');
+
+    // 继续重置 accessory 状态 & 面板内容
     Object.keys(accessories).forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -1119,12 +1138,6 @@ function resetCostumeDisplay() {
         accessories[id].visible = false;
     });
 
-    // Reset panel
-    const graphPlaceholder = document.querySelector('.graph-placeholder');
-    if (graphPlaceholder) {
-        graphPlaceholder.innerHTML = '<div class="initial-message">Waiting for the latest survey to complete...</div>';
-    }
-
     const dataTypeName = document.getElementById('dataTypeName');
     if (dataTypeName) dataTypeName.textContent = 'Awaiting Data';
 
@@ -1135,9 +1148,8 @@ function resetCostumeDisplay() {
     const progressFill = document.querySelector('.progress-fill');
     if (resultNumber) resultNumber.textContent = '--';
     if (progressFill) progressFill.style.width = '0%';
-
-    document.body.removeAttribute('data-final-results');
 }
+
 
 let currentSessionId = null;
 
@@ -1164,6 +1176,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+function setupFirebaseSession(sessionId) {
+    console.log("📡 Listening to session:", sessionId);
+
+    const finalResultsRef = window.databaseRef(window.database, `sessions/${sessionId}/finalResults`);
+    window.onValue(finalResultsRef, (snapshot) => {
+        const finalResults = snapshot.val();
+        if (finalResults?.detailedResults) {
+            displayFinalResults(finalResults.detailedResults);
+        }
+    });
+}
 function setupFirebaseSession(sessionId) {
     console.log("📡 Listening to session:", sessionId);
 
