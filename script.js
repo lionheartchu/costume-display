@@ -1099,6 +1099,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const latestSessionId = sortedSessions[0][0];
+        console.log("🔥 Current:", currentSessionId, "Latest:", latestSessionId);
+
         if (latestSessionId !== currentSessionId) {
             currentSessionId = latestSessionId;
             resetCostumeDisplay();
