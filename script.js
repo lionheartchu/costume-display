@@ -1187,11 +1187,14 @@ let currentResultsUnsubscribe = null;
 function setupFirebaseSession(sessionId) {
     console.log("📡 Listening to session:", sessionId);
 
+    // ✅ 设置当前 session（必须放最前）
+    latestSessionApplied = sessionId;
+
     // ✅ Step 1: 清理旧的监听器
     if (currentQuestionsUnsubscribe) currentQuestionsUnsubscribe();
     if (currentResultsUnsubscribe) currentResultsUnsubscribe();
 
-    // ✅ Step 2: 设置新的监听器并保存返回值
+    // ✅ Step 2: 设置新的监听器
     const questionsRef = window.databaseRef(window.database, `sessions/${sessionId}/questions`);
     currentQuestionsUnsubscribe = window.onChildAdded(questionsRef, (snapshot) => {
         const questionData = snapshot.val();
@@ -1204,15 +1207,11 @@ function setupFirebaseSession(sessionId) {
     });
 
     const finalResultsRef = window.databaseRef(window.database, `sessions/${sessionId}/finalResults`);
-
     currentResultsUnsubscribe = window.onValue(finalResultsRef, (snapshot) => {
         const finalResults = snapshot.val();
         console.log("📥 Final results received:", finalResults);
         if (finalResults?.detailedResults) {
-            displayFinalResults(finalResults.detailedResults, sessionId); // 👈 把 sessionId 传进去
+            displayFinalResults(finalResults.detailedResults, sessionId); // 👈 保留传 sessionId 校验
         }
     });
-    
-    latestSessionApplied = sessionId;
-
 }
