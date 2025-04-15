@@ -803,7 +803,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Enhanced function to display final survey results with cleaned code
-function displayFinalResults(surveyResults) {
+function displayFinalResults(surveyResults,sessionId) {
+    if (sessionId !== latestSessionApplied) {
+        console.log("⏸️ Ignored finalResults from old session:", sessionId);
+        return;
+    }
+    console.log("✅ Applying final results for session:", sessionId);
     // Get the panel elements
     const graphPlaceholder = document.querySelector('.graph-placeholder');
     const dataTypeName = document.getElementById('dataTypeName');
@@ -1076,6 +1081,8 @@ function displayFinalResults(surveyResults) {
 
 // * - firebase section - *
 
+let latestSessionApplied = null;
+
 document.addEventListener('DOMContentLoaded', function () {
     console.log("🎬 DOM fully loaded");
 
@@ -1197,10 +1204,15 @@ function setupFirebaseSession(sessionId) {
     });
 
     const finalResultsRef = window.databaseRef(window.database, `sessions/${sessionId}/finalResults`);
+
     currentResultsUnsubscribe = window.onValue(finalResultsRef, (snapshot) => {
         const finalResults = snapshot.val();
+        console.log("📥 Final results received:", finalResults);
         if (finalResults?.detailedResults) {
-            displayFinalResults(finalResults.detailedResults);
+            displayFinalResults(finalResults.detailedResults, sessionId); // 👈 把 sessionId 传进去
         }
     });
+    
+    latestSessionApplied = sessionId;
+
 }
