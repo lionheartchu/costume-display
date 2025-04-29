@@ -9,6 +9,7 @@
 </head>
 <body>
     <div class="main-container">
+        <canvas id="particleCanvas" class="graph-canvas"></canvas>
         <!-- Left Side: Body Display with Costumes -->
         <div class="costume-display">
             <img id="body-image" src="wbody-display.png" alt="Human Body" class="body-image">
@@ -28,35 +29,36 @@
         <div class="data-info">
             <div class="sci-fi-panel">
                 <div class="glow-border">
-                    <div class="panel-content">
+                    <div class="panel-content deepsea-panel">
                         <!-- Section 1: Title and Subtitle -->
-                        <div class="panel-section">
+                        <div class="panel-section header-block">
                             <h2 id="dataTypeName">Data Type</h2>
                             <p class="subtitle">System Analysis Report</p>
-                            <div class="section-divider"></div>
+                            <div class="scanline-divider"></div>
                         </div>
 
                         <!-- Section 2: Graph -->
-                        <div class="panel-section graph-section">
+                        <div class="panel-section graph-section focal-graph">
                             <div class="graph-placeholder">
-                                <!-- Replace with actual graph -->
-                                [GRAPH VISUALIZATION]
+                                <p style="color:silver;">Waiting for data...</p>
+                                <!-- Any other graph content goes here -->
                             </div>
-                            <p class="small-description">Performance metrics visualization based on neural patterns</p>
+                            <p class="small-description emphasis-description">Your "Data Skin" garment will be displayed here.</p>
                         </div>
 
                         <!-- Section 3: Results -->
-                        <div class="panel-section">
+                        <div class="panel-section result-block">
                             <div class="result-container">
                                 <div class="result-header">
                                     <span class="result-number">84.7</span>
-                                    <span class="result-unit">ms</span>
+                                    <span class="result-unit">%</span>
                                 </div>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: 84.7%"></div>
+                                    <div class="progress-glow-dot"></div>
                                 </div>
                             </div>
-                            <p class="small-description">Average response time across neural pathways</p>
+                            <p class="small-description subtle-description">Your data security score</p>
                         </div>
                     </div>
                 </div>

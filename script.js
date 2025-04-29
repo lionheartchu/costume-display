@@ -1,20 +1,16 @@
 // Debug listener to catch ALL messages
 window.addEventListener('message', function(event) {
-    console.log("RAW MESSAGE RECEIVED:", event.origin);
-    console.log("MESSAGE DATA:", event.data);
+    // Remove console logs for raw message data
     
     // Don't restrict by origin during testing
     if (event.data && typeof event.data === 'object') {
-        console.log("Processing message with type:", event.data.type);
+        // Remove processing message type log
         
         if (event.data.type === 'questionCompleted') {
-            console.log("Question completed data received:", event.data);
             revealGarment(event.data.questionIndex, event.data.score);
         } else if (event.data.type === 'surveyResults') {
-            console.log("Survey results received:", event.data);
             processSurveyData(event.data);
         } else if (event.data.type === 'garmentUpdate') {
-            console.log("Garment update received:", event.data);
             updateGarment(event.data.garment, event.data.stage);
         }
     }
@@ -27,11 +23,8 @@ window.addEventListener('message', function(event) {
     const allowedOrigin = 'https://lionheartchu.github.io';
     
     if (!event.origin.startsWith(allowedOrigin)) {
-        console.log("Origin verification failed:", event.origin);
         return;
     }
-    
-    console.log("Received message from survey site:", event.data);
     
     // Process individual question completion (new functionality)
     if (event.data.type === 'questionCompleted') {
@@ -72,7 +65,7 @@ function updateGarment(garmentId, stage, exactScore = null, dataType = null) {
     // Update the image
     const element = document.getElementById(garmentId);
     if (element) {
-        console.log(`Found element with ID ${garmentId}`);
+        // Remove element found log
         
         // Ensure it's visible - this is critical
         element.style.visibility = 'visible';
@@ -84,7 +77,7 @@ function updateGarment(garmentId, stage, exactScore = null, dataType = null) {
         
         // Debug: Log the image path we're trying to use
         const imagePath = `costume/${garmentId}${currentStage}.png`;
-        console.log(`Setting image source to: ${imagePath}`);
+        // Remove image path log
         
         // Now set the actual element source
         element.src = imagePath;
@@ -118,189 +111,6 @@ const accessories = {
     bio: { current: 0, total: 4, visible: false }
 };
 
-function cycleAccessoryImage(accessoryId) {
-    const accessory = accessories[accessoryId];
-    accessory.current = accessory.current % accessory.total + 1;
-    
-    const element = document.getElementById(accessoryId);
-    
-    // Update the image source
-    element.src = `costume/${accessoryId}${accessory.current}.png`;
-    
-    // Add fade transition effect
-    element.style.opacity = '0';
-    setTimeout(() => {
-        element.style.opacity = '1';
-        
-        // Reset all state classes
-        element.classList.remove('warning-state', 'caution-state', 'secure-state', 'optimal-state');
-        
-        // Add appropriate class based on the stage
-        if (accessory.current === 1) {
-            element.classList.add('warning-state');
-        } else if (accessory.current === 2) {
-            element.classList.add('caution-state');
-        } else if (accessory.current === 3) {
-            element.classList.add('secure-state');
-        } else if (accessory.current === 4) {
-            element.classList.add('optimal-state');
-        }
-        
-        // When cycling manually, use stage-based calculation (no exact score)
-        updatePanelWithAccessoryImage(accessoryId);
-    }, 50);
-}
-
-// Add this function to the beginning of your script to set up the enhanced UI
-function enhancePanelUI() {
-    console.log("Enhancing panel UI with futuristic design");
-    
-    // Add new styles to the document
-    const style = document.createElement('style');
-    style.textContent = `
-        /* Futuristic monospace font for the entire panel */
-        .panel-container, .panel-section, .result-number, #dataTypeName, #accessoryStatusSubtitle {
-            font-family: 'Courier New', monospace !important;
-        }
-        
-        /* Make panel lighter, shorter, wider and more futuristic */
-        .panel-container {
-            background: rgba(15, 25, 50, 0.7) !important;
-            border: 1px solid rgba(0, 240, 255, 0.3) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
-            padding: 15px 25px !important;
-            max-height: 420px !important;
-            width: 380px !important;
-            backdrop-filter: blur(10px) !important;
-        }
-        
-        /* Animated border effect */
-        @keyframes borderPulse {
-            0% { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
-            50% { border-color: rgba(0, 240, 255, 0.7); box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); }
-            100% { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
-        }
-        
-        .panel-container {
-            animation: borderPulse 4s infinite;
-        }
-        
-        /* Enhanced data type title */
-        #dataTypeName {
-            font-size: 1.8em !important;
-            color: rgba(0, 240, 255, 1) !important;
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
-            letter-spacing: 1px !important;
-            margin-bottom: 4px !important;
-        }
-        
-        /* Enhanced accessory status subtitle */
-        #accessoryStatusSubtitle {
-            font-size: 1.4em !important;
-            color: rgba(255, 255, 255, 0.9) !important;
-            font-weight: bold !important;
-            letter-spacing: 1px !important;
-            margin-top: 2px !important;
-            margin-bottom: 12px !important;
-            background: rgba(0, 0, 0, 0.2) !important;
-            padding: 4px 8px !important;
-            border-radius: 4px !important;
-            display: inline-block !important;
-        }
-        
-        /* Futuristic progress bar */
-        .progress-bar {
-            height: 12px !important;
-            background: rgba(0, 0, 0, 0.3) !important;
-            border: 1px solid rgba(0, 240, 255, 0.3) !important;
-        }
-        
-        .progress-fill {
-            background: linear-gradient(to right, #00f0ff, #0066ff) !important;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.7) !important;
-        }
-        
-        /* Results number styling */
-        .result-number {
-            font-size: 2.2em !important;
-            color: rgba(0, 240, 255, 1) !important;
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
-        }
-        
-        /* Panel image styling */
-        .panel-accessory-image {
-            max-height: 150px !important;
-            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) !important;
-        }
-        
-        /* Make bottom description larger */
-        .panel-section:last-child .small-description {
-            font-size: 1.1em !important;
-            color: rgba(255, 255, 255, 0.9) !important;
-            margin-top: 10px !important;
-        }
-        
-        /* Make all small descriptions larger */
-        .small-description {
-            font-size: 1.1em !important;
-            color: rgba(255, 255, 255, 0.85) !important;
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// Call this function when the document is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("COSTUME SITE LOADED - TESTING COMMUNICATIONS");
-    // Call the UI enhancement function
-    enhancePanelUI();
-    
-    // Add click handlers for all accessories
-    Object.keys(accessories).forEach(accessoryId => {
-        const element = document.getElementById(accessoryId);
-        if (element) {
-            // Only enable click events for visible accessories
-            element.addEventListener('click', () => {
-                if (accessories[accessoryId].visible) {
-                    cycleAccessoryImage(accessoryId);
-                    updatePanelWithAccessoryImage(accessoryId);
-                }
-            });
-            
-            // Hover event to show the current image in the panel (only for visible accessories)
-            element.addEventListener('pointerover', () => {
-                if (accessories[accessoryId].visible) {
-                    updatePanelWithAccessoryImage(accessoryId);
-                }
-            });
-        }
-    });
-    
-    // Set initial panel content with message about completing survey
-    const graphPlaceholder = document.querySelector('.graph-placeholder');
-    if (graphPlaceholder) {
-        graphPlaceholder.innerHTML = '<div class="initial-message">Complete the survey to build your digital privacy costume</div>';
-        
-        // Style for the initial message
-        const style = document.createElement('style');
-        style.textContent = `
-            .initial-message {
-                color: rgba(0, 255, 240, 0.8);
-                font-size: 1.2em;
-                text-align: center;
-                padding: 20px;
-                animation: pulse 2s infinite;
-            }
-            @keyframes pulse {
-                0%, 100% { opacity: 0.6; }
-                50% { opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-});
-
 // Map data types from the survey to accessory IDs
 const dataTypeToAccessory = {
     "Visual Data": "eyes",
@@ -314,7 +124,7 @@ const dataTypeToAccessory = {
 
 // Function to reveal garments as questions are completed
 function revealGarment(questionIndex, score) {
-    console.log(`Revealing garment for question ${questionIndex} with score ${score}`);
+    // Remove revealing garment log
     
     // Get the data type from Site A's questions array equivalent
     let dataType = null;
@@ -348,11 +158,9 @@ function revealGarment(questionIndex, score) {
         return;
     }
     
-    console.log(`Mapped data type ${dataType} to accessory ${accessoryId}`);
-    
     // Calculate stage based on score
     const stage = mapScoreToStage(score);
-    console.log(`Calculated stage ${stage} for score ${score}`);
+    // Remove calculated stage log
     
     // Update the garment
     updateGarment(accessoryId, stage, score, dataType);
@@ -371,7 +179,7 @@ function mapScoreToStage(score) {
 
 // Function to process the complete survey data
 function processSurveyData(data) {
-    console.log("Processing full survey data:", data);
+    // Remove processing survey data log
     
     if (data.responses) {
         // Process each response to update the corresponding garment
@@ -475,24 +283,29 @@ function initializeGarments() {
 
 // Add this listener to handle the survey results message type
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Costume site loaded, listening for messages");
+    // Remove costume site loaded log
     
     // Listen for postMessage events
     window.addEventListener('message', function(event) {
         // Accept any origin during testing, tighten this later
-        console.log("Received message from:", event.origin);
-        console.log("Message data:", event.data);
+        // Remove received message logs
         
         if (event.data && event.data.type === 'questionCompleted') {
-            console.log("Processing question completion");
-            revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
+            // Remove processing question completion log
+            
+            // Add pause and effects before revealing garment
+            playRevealEffect(() => {
+                revealGarment(event.data.questionIndex, event.data.score, event.data.dataType);
+            });
         } else if (event.data && event.data.type === 'surveyResults') {
-            // Site A is sending 'surveyResults' instead of 'allQuestionsCompleted'
             console.log("All questions completed, showing final results");
             
-            // Transform the data format to match what displayFinalResults expects
-            const formattedResults = event.data.detailedResults || {};
-            displayFinalResults(formattedResults);
+            // Add pause and effects before showing final results
+            playRevealEffect(() => {
+                // Transform the data format to match what displayFinalResults expects
+                const formattedResults = event.data.detailedResults || {};
+                displayFinalResults(formattedResults);
+            });
         }
     }, false);
     
@@ -501,12 +314,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (urlParams.has('surveyData')) {
         try {
             const surveyData = JSON.parse(urlParams.get('surveyData'));
-            console.log("Received survey data from URL params:", surveyData);
+            // Remove URL params log
             
             if (surveyData.type === 'surveyResults') {
-                // Transform the data format to match what displayFinalResults expects
-                const formattedResults = surveyData.detailedResults || {};
-                displayFinalResults(formattedResults);
+                // Add pause and effects before showing final results
+                playRevealEffect(() => {
+                    // Transform the data format to match what displayFinalResults expects
+                    const formattedResults = surveyData.detailedResults || {};
+                    displayFinalResults(formattedResults);
+                });
             }
         } catch (e) {
             console.error("Error parsing URL survey data:", e);
@@ -514,118 +330,71 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Modified function to apply styling with shorter panel and less obvious stage 4
-function applyFuturisticStyles() {
-    console.log("Applying futuristic panel styles with shorter panel");
-    
-    // Create a separate style element for our new styles
-    const futuristicStyles = document.createElement('style');
-    futuristicStyles.id = 'futuristic-panel-styles'; // ID to avoid duplicates
-    
-    // Remove any previous version if it exists
-    const oldStyles = document.getElementById('futuristic-panel-styles');
-    if (oldStyles) {
-        oldStyles.remove();
+// Function to initialize and animate the particle canvas
+function initializeParticleCanvas() {
+    const canvas = document.getElementById('particleCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        
+        // Make sure canvas dimensions match its display size
+        canvas.width = canvas.offsetWidth || canvas.clientWidth || 200;
+        canvas.height = canvas.offsetHeight || canvas.clientHeight || 200;
+        
+        // Remove canvas dimensions log
+        
+        // Only create particles if canvas has valid dimensions
+        if (canvas.width > 0 && canvas.height > 0) {
+            // REDUCED: number of particles from 80 to 25
+            const particles = Array.from({ length: 25 }, () => {
+                // Larger random sized particles
+                const radius = Math.random() * 2 + 1;
+                return {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: radius,
+                    // REDUCED: particle speed for less CPU usage
+                    speed: Math.random() * 0.3 + 0.05,
+                    angle: Math.random() * 2 * Math.PI,
+                    opacity: Math.random() * 0.35 + 0.15,
+                    // SIMPLIFIED: removed animation parameters for opacity
+                };
+            });
+            
+            // Using a slower animation frame rate (less frequent updates)
+            let lastFrame = 0;
+            const frameInterval = 50; // Only update every 50ms (instead of every frame)
+            
+            function drawParticles(timestamp) {
+                // Only update if enough time has passed
+                if (!lastFrame || timestamp - lastFrame > frameInterval) {
+                    lastFrame = timestamp;
+                    
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (const p of particles) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(0,255,255,${p.opacity})`;
+                        ctx.fill();
+                        p.x += Math.cos(p.angle) * p.speed;
+                        p.y += Math.sin(p.angle) * p.speed;
+                        
+                        if (p.x < 0) p.x = canvas.width;
+                        if (p.x > canvas.width) p.x = 0;
+                        if (p.y < 0) p.y = canvas.height;
+                        if (p.y > canvas.height) p.y = 0;
+                    }
+                }
+                requestAnimationFrame(drawParticles);
+            }
+            
+            requestAnimationFrame(drawParticles);
+            // Remove animation started log
+        } else {
+            console.warn("Canvas has invalid dimensions");
+        }
+    } else {
+        console.warn("Particle canvas element not found");
     }
-    
-    futuristicStyles.textContent = `
-        /* Futuristic monospace font for the entire panel */
-        .panel-container, .panel-section, .result-number, #dataTypeName, #accessoryStatusSubtitle {
-            font-family: 'Courier New', monospace !important;
-        }
-        
-        /* Make panel lighter, shorter, and more futuristic */
-        .panel-container {
-            background: rgba(15, 25, 50, 0.7) !important;
-            border: 1px solid rgba(0, 240, 255, 0.3) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2) !important;
-            padding: 15px 25px !important;
-            max-height: 370px !important; /* SHORTER panel height */
-            width: 380px !important;
-            backdrop-filter: blur(10px) !important;
-        }
-        
-        /* Animated border effect */
-        @keyframes borderPulse {
-            0% { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
-            50% { border-color: rgba(0, 240, 255, 0.7); box-shadow: 0 0 25px rgba(0, 240, 255, 0.4); }
-            100% { border-color: rgba(0, 240, 255, 0.3); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
-        }
-        
-        .panel-container {
-            animation: borderPulse 4s infinite;
-        }
-        
-        /* Enhanced data type title with moderate size */
-        #dataTypeName {
-            font-size: 1.5em !important;
-            color: rgba(0, 240, 255, 1) !important;
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
-            letter-spacing: 1px !important;
-            margin-bottom: 4px !important;
-        }
-        
-        /* Enhanced accessory status subtitle */
-        #accessoryStatusSubtitle {
-            font-size: 1.2em !important;
-            color: rgba(255, 255, 255, 0.9) !important;
-            font-weight: bold !important;
-            letter-spacing: 1px !important;
-            margin-top: 2px !important;
-            margin-bottom: 12px !important;
-            background: rgba(0, 0, 0, 0.2) !important;
-            padding: 4px 8px !important;
-            border-radius: 4px !important;
-            display: inline-block !important;
-        }
-        
-        /* Futuristic progress bar */
-        .progress-bar {
-            height: 12px !important;
-            background: rgba(0, 0, 0, 0.3) !important;
-            border: 1px solid rgba(0, 240, 255, 0.3) !important;
-        }
-        
-        .progress-fill {
-            background: linear-gradient(to right, #00f0ff, #0066ff) !important;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.7) !important;
-        }
-        
-        /* Results number styling */
-        .result-number {
-            font-size: 2em !important;
-            color: rgba(0, 240, 255, 1) !important;
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
-        }
-        
-        /* Panel image styling */
-        .panel-accessory-image {
-            max-height: 130px !important; /* SMALLER to fit shorter panel */
-            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) !important;
-        }
-        
-        /* Make stage 4 less obvious by reducing its glow/intensity */
-        .panel-optimal-state, .graph-optimal .panel-accessory-image {
-            filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.3)) !important;
-            opacity: 0.9 !important;
-        }
-        
-        /* Make bottom description reasonably sized */
-        .panel-section:last-child .small-description {
-            font-size: 0.95em !important;
-            color: rgba(255, 255, 255, 0.9) !important;
-            margin-top: 10px !important;
-        }
-        
-        /* Make all small descriptions moderately sized */
-        .small-description {
-            font-size: 0.95em !important;
-            color: rgba(255, 255, 255, 0.85) !important;
-        }
-    `;
-    
-    document.head.appendChild(futuristicStyles);
 }
 
 // Update the panel UI function with more friendly descriptions
@@ -738,30 +507,33 @@ function updatePanelWithAccessoryImage(accessoryId, exactScore = null, dataType 
     resultNumber.textContent = percentage.toFixed(1);
     document.querySelector('.result-unit').textContent = '%';
     progressFill.style.width = `${percentage}%`;
+
+    // Update the glow dot position whenever the progress fill width changes
+    updateProgressDot();
     
     // Update bottom description with new friendly format
     const bottomDescription = document.querySelector('.panel-section:last-child .small-description');
     const pointsRemaining = (100 - percentage).toFixed(1);
     
     if (percentage < 100) {
-        bottomDescription.textContent = `Just ${pointsRemaining} more points and your ${accessoryId} will be fully protected!`;
+        bottomDescription.textContent = `You need${pointsRemaining} more points to get your ${accessoryId} fully protected!`;
     } else {
         bottomDescription.textContent = `Fantastic! Your ${accessoryId} has complete protection!`;
     }
     
-    // Log the update for debugging
+    // Log the update for debugging (keep this one for important garment updates)
     console.log(`Updated panel for ${accessoryId}: Stage ${currentImage}, Value ${percentage.toFixed(1)}%`);
 }
 
 // Fix for costume visibility and stages - call this at document load
 function fixCostumeDisplay() {
-    console.log("Applying costume display fixes");
+    // Remove applying costume display fixes log
     
     // Reset all accessories to ensure proper stage handling
     for (const accessoryId in accessories) {
         // Only reset if not explicitly set already
         if (accessories[accessoryId].current === 0) {
-            console.log(`Resetting ${accessoryId} display state`);
+            // Remove resetting display state log
             
             // Hide initially
             const element = document.getElementById(accessoryId);
@@ -771,7 +543,7 @@ function fixCostumeDisplay() {
                 element.style.display = 'none';
             }
         } else {
-            console.log(`${accessoryId} already at stage ${accessories[accessoryId].current}, ensuring visibility`);
+            // Remove already at stage log
             
             // If it has a stage, make sure it's visible
             const element = document.getElementById(accessoryId);
@@ -783,32 +555,54 @@ function fixCostumeDisplay() {
                 // Set correct image
                 const stage = accessories[accessoryId].current;
                 element.src = `costume/${accessoryId}${stage}.png`;
-                console.log(`Set ${accessoryId} to image: costume/${accessoryId}${stage}.png`);
+                // Remove set image log
             }
         }
     }
 }
+const value = 84.7;
+document.querySelector('.progress-fill').style.width = `${value}%`;
+updateProgressDot();
 
 // Call both fixes when the document loads
 document.addEventListener('DOMContentLoaded', function() {
+    // Keep COSTUME SITE LOADED log for important init confirmation
     console.log("COSTUME SITE LOADED - APPLYING FIXES");
-    
-    // Apply styling with moderate text sizes and shorter panel
-    applyFuturisticStyles();
     
     // Fix costume display
     fixCostumeDisplay();
     
-    // ... rest of your existing initialization code ...
+    // Initialize particle canvas animation
+    initializeParticleCanvas();
+    
+    // Update the progress dot position
+    updateProgressDot();
+    
+    // Set up MutationObserver to watch for changes to the progress fill width
+    const progressFill = document.querySelector('.progress-fill');
+    if (progressFill) {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'style') {
+                    // When progress fill style changes, update the dot position
+                    updateProgressDot();
+                }
+            });
+        });
+        
+        // Start observing the progress fill for attribute changes
+        observer.observe(progressFill, { attributes: true });
+    }
 });
 
-// Enhanced function to display final survey results with cleaned code
-function displayFinalResults(surveyResults,sessionId) {
+// Enhanced function to display final survey results with simplified output
+function displayFinalResults(surveyResults, sessionId) {
     if (sessionId !== latestSessionApplied) {
         console.log("⏸️ Ignored finalResults from old session:", sessionId);
         return;
     }
     console.log("✅ Applying final results for session:", sessionId);
+    
     // Get the panel elements
     const graphPlaceholder = document.querySelector('.graph-placeholder');
     const dataTypeName = document.getElementById('dataTypeName');
@@ -834,57 +628,84 @@ function displayFinalResults(surveyResults,sessionId) {
         panelContainer.classList.add('final-results-panel');
     }
     
-    // Create HTML for the results summary
-    let resultsHTML = '<div class="final-results">';
-    
-    // Add scroll hint at the TOP
-    resultsHTML += `
-        <div class="scroll-hint">
-            <div class="scroll-arrow">↓</div>
-            <div class="scroll-text">Scroll for all results</div>
-        </div>
-    `;
-    
-    // Calculate average score
+    // Find strongest and weakest data types
+    let strongestType = null;
+    let weakestType = null;
+    let highestScore = -1;
+    let lowestScore = 101; // Higher than possible
     let totalScore = 0;
     let count = 0;
     
-    // Add each data type with its score
+    // Process survey results to find strongest and weakest
     for (const [dataType, score] of Object.entries(surveyResults)) {
         if (typeof score === 'number') {
-            const accessoryId = dataTypeToAccessory[dataType] || dataType.toLowerCase().replace(' ', '-');
-            resultsHTML += `
-                <div class="result-item">
-                    <div class="result-label">${dataType}:</div>
-                    <div class="result-value">${score.toFixed(1)}%</div>
-                    <div class="result-bar">
-                        <div class="result-bar-fill" style="width: ${score}%"></div>
-                    </div>
-                </div>
-            `;
+            if (score > highestScore) {
+                highestScore = score;
+                strongestType = dataType;
+            }
+            if (score < lowestScore) {
+                lowestScore = score;
+                weakestType = dataType;
+            }
             totalScore += score;
             count++;
         }
     }
     
-    // Calculate and add average
+    // Calculate average score (still needed for progress bar)
     const averageScore = count > 0 ? totalScore / count : 0;
-    resultsHTML += `
-        <div class="result-item result-average">
-            <div class="result-label">Overall Protection:</div>
-            <div class="result-value">${averageScore.toFixed(1)}%</div>
-            <div class="result-bar">
-                <div class="result-bar-fill" style="width: ${averageScore}%"></div>
+    
+    // Create HTML for the side-by-side results
+    let resultsHTML = '<div class="final-results simplified side-by-side">';
+    
+    // Get accessory IDs for the strongest and weakest types
+    const strongestAccessoryId = dataTypeToAccessory[strongestType] || 'brain';
+    const weakestAccessoryId = dataTypeToAccessory[weakestType] || 'hands';
+    
+    // Add strong point with visualization
+    if (strongestType) {
+        resultsHTML += `
+            <div class="result-item result-strongest">
+                <div class="result-header">
+                    <div class="result-label">Strongest Area:</div>
+                    <div class="result-value">${highestScore.toFixed(1)}%</div>
+                </div>
+                <div class="result-type">${strongestType}</div>
+                <div class="result-visualization">
+                    <img src="costume/${strongestAccessoryId}4.png" alt="${strongestType}" class="type-icon">
+                </div>
+                <div class="result-bar">
+                    <div class="result-bar-fill strongest" style="width: ${highestScore}%"></div>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    }
+    
+    // Add weak point with visualization
+    if (weakestType) {
+        resultsHTML += `
+            <div class="result-item result-weakest">
+                <div class="result-header">
+                    <div class="result-label">Weakest Area:</div>
+                    <div class="result-value">${lowestScore.toFixed(1)}%</div>
+                </div>
+                <div class="result-type">${weakestType}</div>
+                <div class="result-visualization">
+                    <img src="costume/${weakestAccessoryId}1.png" alt="${weakestType}" class="type-icon">
+                </div>
+                <div class="result-bar">
+                    <div class="result-bar-fill weakest" style="width: ${lowestScore}%"></div>
+                </div>
+            </div>
+        `;
+    }
     
     resultsHTML += '</div>';
     
     // Inject into the graph area
     graphPlaceholder.innerHTML = resultsHTML;
     
-    // FIX 1: Remove bottom descriptions completely by hiding the element
+    // Hide bottom descriptions
     const smallDescriptions = document.querySelectorAll('.small-description');
     smallDescriptions.forEach(desc => {
         desc.style.display = 'none';
@@ -900,162 +721,148 @@ function displayFinalResults(surveyResults,sessionId) {
     // Store the average score in an attribute to prevent hover issues
     if (resultNumber) resultNumber.setAttribute('data-final-score', averageScore.toFixed(1));
     
-    // FIX 2: Disable hover effects that change the progress bar
+    // Add styles for side-by-side results
     const style = document.createElement('style');
     style.id = 'final-results-styles';
     style.textContent = `
-        /* Disable hover effects when in final results mode */
-        body[data-final-results="true"] .accessory:hover {
-            cursor: default !important;
-        }
-        
-        /* Make sure hover doesn't change the progress display */
-        body[data-final-results="true"] .accessory:hover ~ .panel-container .result-number,
-        body[data-final-results="true"] .accessory:hover ~ .panel-container .progress-fill {
-            /* These will override any hover effects */
-            content: attr(data-final-score) !important;
-            width: attr(data-width) !important;
-        }
-        
-        /* Neutral sci-fi styling for final results panel */
-        .final-results-panel {
-            background: rgba(15, 25, 50, 0.85) !important;
-            border: 1px solid rgba(0, 240, 255, 0.5) !important;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3) !important;
-            max-height: none !important; /* Remove any height restriction */
-        }
-        
-        .final-results {
-            padding: 5px;
-            max-height: 250px !important; /* INCREASED height */
-            overflow-y: auto;
-            margin-bottom: 10px;
-            position: relative;
-            padding-top: 10px !important;
-            padding-bottom: 10px !important;
-        }
-        
-        .result-item {
-            margin-bottom: 10px;
-            font-size: 0.9em;
+        /* Side-by-side final results styles */
+        .final-results.simplified.side-by-side {
+            padding: 0;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 12px;
+            height: auto;
+            width: 100%;
+        }
+        
+        .final-results.side-by-side .result-item {
+            flex: 1;
+            margin-bottom: 0;
+            padding: 18px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .final-results.side-by-side .result-header {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 10px;
         }
         
-        .result-label {
-            width: 65%;
-            color: rgba(255, 255, 255, 0.9);
+        .final-results.side-by-side .result-strongest {
+            border: 1px solid rgba(0, 240, 255, 0.5);
+            background: rgba(0, 30, 80, 0.2);
+        }
+        
+        .final-results.side-by-side .result-weakest {
+            border: 1px solid rgba(255, 50, 50, 0.5);
+            background: rgba(50, 0, 0, 0.2);
+        }
+        
+        .final-results.side-by-side .result-type {
+            font-size: 1.2em;
+            margin-bottom: 10px;
             font-weight: bold;
+            text-align: center;
         }
         
-        .result-value {
-            width: 35%;
-            text-align: right;
+        .final-results.side-by-side .result-strongest .result-type {
             color: rgba(0, 240, 255, 1);
             text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
         }
         
-        .result-bar {
-            width: 100%;
+        .final-results.side-by-side .result-weakest .result-type {
+            color: rgba(255, 100, 100, 1);
+            text-shadow: 0 0 5px rgba(255, 50, 50, 0.5);
+        }
+        
+        .final-results.side-by-side .result-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        .final-results.side-by-side .result-value {
+            font-weight: bold;
+            font-size: 1em;
+        }
+        
+        .final-results.side-by-side .result-visualization {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+            height: 130px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        
+        .final-results.side-by-side .type-icon {
+            max-height: 130px;
+            max-width: 100px;
+            object-fit: contain;
+        }
+        .final-results.side-by-side .result-strongest .type-icon {
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.7));
+        }
+        
+        .final-results.side-by-side .result-weakest .type-icon {
+            filter: drop-shadow(0 0 8px rgba(255, 50, 50, 0.7));
+        }
+        
+        .final-results.side-by-side .result-bar {
             height: 10px;
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 5px;
-            margin-top: 3px;
-            margin-bottom: 5px;
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            margin-top: auto;
         }
         
-        .result-bar-fill {
+        .final-results.side-by-side .result-bar-fill {
             height: 100%;
-            background: linear-gradient(to right, #00f0ff, #0066ff);
-            border-radius: 5px;
-            box-shadow: 
-                0 0 8px rgba(0, 240, 255, 0.7),
-                0 0 15px rgba(0, 240, 255, 0.4);
-            animation: glow-pulse 2s infinite;
+            border-radius: 6px;
         }
         
-        @keyframes glow-pulse {
-            0%, 100% { box-shadow: 0 0 8px rgba(0, 240, 255, 0.7), 0 0 15px rgba(0, 240, 255, 0.4); }
-            50% { box-shadow: 0 0 12px rgba(0, 240, 255, 0.9), 0 0 20px rgba(0, 240, 255, 0.6); }
-        }
-        
-        .result-average {
-            margin-top: 12px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(0, 240, 255, 0.3);
-        }
-        
-        .result-average .result-label,
-        .result-average .result-value {
-            font-size: 1.1em;
-        }
-        
-        .result-average .result-bar {
-            height: 12px;
-        }
-        
-        .result-average .result-bar-fill {
+        .final-results.side-by-side .result-bar-fill.strongest {
             background: linear-gradient(to right, #00f0ff, #4d00ff);
-            box-shadow: 
-                0 0 10px rgba(0, 240, 255, 0.8),
-                0 0 20px rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.7);
         }
         
-        /* Hide small descriptions in final results mode */
+        .final-results.side-by-side .result-bar-fill.weakest {
+            background: linear-gradient(to right, #ff3366, #ff6633);
+            box-shadow: 0 0 8px rgba(255, 50, 50, 0.7);
+        }
+        
+        /* Disable hover effects on final results */
+        body[data-final-results="true"] .accessory:hover {
+            cursor: default !important;
+        }
+        
         body[data-final-results="true"] .small-description {
             display: none !important;
         }
         
-        /* Scroll hint at the top with better styling */
-        .scroll-hint {
-            text-align: center;
-            color: rgba(0, 240, 255, 0.8);
-            font-size: 0.85em;
-            padding: 5px 0;
-            margin-bottom: 8px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-            animation: fade-pulse 1.5s infinite;
+        /* Move final results down and add margin from panel-section */
+        body[data-final-results="true"] .graph-placeholder {
+            margin-top: 30px !important;
+            border: none !important;
+            background: none !important;
+            box-shadow: none !important;
         }
         
-        .scroll-arrow {
-            font-size: 1.2em;
-            margin-bottom: 2px;
-            animation: bounce 1.5s infinite;
+        /* Add margin between final results and the next panel section */
+        body[data-final-results="true"] .graph-section {
+            margin-bottom: 80px !important;
         }
         
-        @keyframes fade-pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(3px); }
-        }
-        
-        /* Enhanced scrollbar styling */
-        .final-results::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .final-results::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-        }
-        
-        .final-results::-webkit-scrollbar-thumb {
-            background: rgba(0, 240, 255, 0.5);
-            border-radius: 3px;
-            box-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
-        }
-        
-        .final-results::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 240, 255, 0.7);
-            box-shadow: 0 0 8px rgba(0, 240, 255, 0.7);
+        /* Add more space before the final panel section */
+        body[data-final-results="true"] .panel-section:last-child {
+            margin-top: 25px !important;
         }
     `;
     
@@ -1066,14 +873,13 @@ function displayFinalResults(surveyResults,sessionId) {
     // Add new styles
     document.head.appendChild(style);
     
-    // FIX 2: Override the hover behavior for accessories
+    // Disable hover behavior for accessories
     const accessories = document.querySelectorAll('.accessory');
     accessories.forEach(accessory => {
-        // Disable hover behavior by removing any hover event listeners
         accessory.style.pointerEvents = 'none';
     });
     
-    // Store the final progress width as an attribute to restore after hover
+    // Store the final progress width
     if (progressFill) {
         progressFill.setAttribute('data-width', `${averageScore}%`);
     }
@@ -1084,8 +890,8 @@ function displayFinalResults(surveyResults,sessionId) {
 let latestSessionApplied = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("🎬 DOM fully loaded");
-
+    // Remove DOM fully loaded log
+    
     // ✅ Firebase session tracker
     const sessionsRef = window.databaseRef(window.database, 'sessions');
     window.onValue(sessionsRef, (snapshot) => {
@@ -1179,6 +985,9 @@ function resetCostumeDisplay() {
     const progressFill = document.querySelector('.progress-fill');
     if (resultNumber) resultNumber.textContent = '--';
     if (progressFill) progressFill.style.width = '0%';
+    
+    // Also reset the glow dot position
+    updateProgressDot();
 }
 
 let currentSessionId = null;
@@ -1201,9 +1010,12 @@ function setupFirebaseSession(sessionId) {
     currentQuestionsUnsubscribe = window.onChildAdded(questionsRef, (snapshot) => {
         const questionData = snapshot.val();
         if (questionData) {
-            revealGarment({
-                dataType: questionData.dataType,
-                score: questionData.score
+            // Add pause and effects before revealing garment
+            playRevealEffect(() => {
+                revealGarment({
+                    dataType: questionData.dataType,
+                    score: questionData.score
+                });
             });
         }
     });
@@ -1213,7 +1025,227 @@ function setupFirebaseSession(sessionId) {
         const finalResults = snapshot.val();
         console.log("📥 Final results received:", finalResults);
         if (finalResults?.detailedResults) {
-            displayFinalResults(finalResults.detailedResults, sessionId); // 👈 保留传 sessionId 校验
+            // Add pause and effects before showing final results
+            playRevealEffect(() => {
+                displayFinalResults(finalResults.detailedResults, sessionId);
+            });
         }
     });
+}
+
+// Add this new function after the resetCostumeDisplay function
+function playRevealEffect(callback) {
+    // Get body image element
+    const bodyImage = document.getElementById('body-image');
+    const costumeDisplay = document.querySelector('.costume-display');
+    
+    // Add scan pulse effect
+    const scanPulseElement = document.createElement('div');
+    scanPulseElement.className = 'scan-pulse-effect';
+    costumeDisplay.appendChild(scanPulseElement);
+    
+    // Add scan-pulse CSS if not already added
+    if (!document.getElementById('scan-pulse-styles')) {
+        const scanPulseStyles = document.createElement('style');
+        scanPulseStyles.id = 'scan-pulse-styles';
+        scanPulseStyles.textContent = `
+            .scan-pulse-effect {
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 80%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(0, 255, 255, 0.1),
+                    rgba(255, 255, 255, 0.3),
+                    rgba(0, 255, 255, 0.1),
+                    transparent
+                );
+                opacity: 0.3;
+                animation: scanPulseMove 3.5s linear;
+                pointer-events: none;
+                z-index: 6;
+            }
+            
+            @keyframes scanPulseMove {
+    0% { left: -35%; }
+    100% { left: 35%; }
+}
+
+        `;
+        document.head.appendChild(scanPulseStyles);
+    }
+    
+    // Store current visibility state of all accessories
+    const visibilityStates = {};
+    Object.keys(accessories).forEach(accessoryId => {
+        const element = document.getElementById(accessoryId);
+        if (element) {
+            visibilityStates[accessoryId] = {
+                visible: accessories[accessoryId].visible,
+                style: {
+                    visibility: element.style.visibility,
+                    opacity: element.style.opacity,
+                    display: element.style.display
+                }
+            };
+            
+            // Hide all accessories during the effect
+            element.style.visibility = 'hidden';
+            element.style.opacity = '0';
+            element.style.display = 'none';
+        }
+    });
+    
+    // Add glow effect class to body image
+    bodyImage.classList.add('reveal-glow-effect');
+    
+    // Show a visual indicator that data is loading
+    showConnectionMessage("Loading data visualization...", false);
+    
+    // After 3 seconds, remove glow effect and execute callback
+    setTimeout(() => {
+        bodyImage.classList.remove('reveal-glow-effect');
+        
+        // Remove scan pulse effect
+        if (scanPulseElement && scanPulseElement.parentNode) {
+            scanPulseElement.parentNode.removeChild(scanPulseElement);
+        }
+        
+        // Execute the callback (which will set up the new garment)
+        if (typeof callback === 'function') {
+            callback();
+        }
+        
+        // Restore all accessories that should be visible
+        Object.keys(accessories).forEach(accessoryId => {
+            const element = document.getElementById(accessoryId);
+            if (element && accessories[accessoryId].visible) {
+                element.style.visibility = 'visible';
+                element.style.opacity = '1';
+                element.style.display = 'block';
+            }
+        });
+    }, 3000);
+}
+
+// Add CSS for glow effect immediately
+const revealGlowStyle = document.createElement('style');
+revealGlowStyle.textContent = `
+    @keyframes revealGlow {
+    0% {
+        filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) brightness(0.9);
+        transform: scale(1);
+        opacity: 0.75;
+    }
+    50% {
+        filter: drop-shadow(0 0 16px rgba(0, 255, 255, 0.6)) brightness(1.1);
+        transform: scale(1.015); /* ✨微微膨胀 */
+        opacity: 0.9;
+    }
+    100% {
+        filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) brightness(0.9);
+        transform: scale(1);
+        opacity: 0.75;
+    }
+}
+
+.reveal-glow-effect {
+    animation: revealGlow 2.8s ease-in-out infinite;
+    will-change: filter, transform, opacity;
+}
+
+`;
+document.head.appendChild(revealGlowStyle);
+
+// Modified particle canvas initialization - move inside document loaded event
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing DOMContentLoaded code ...
+    
+    // Initialize particle canvas animation
+    initializeParticleCanvas();
+});
+
+// Function to initialize and animate the particle canvas
+function initializeParticleCanvas() {
+    const canvas = document.getElementById('particleCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        
+        // Make sure canvas dimensions match its display size
+        canvas.width = canvas.offsetWidth || canvas.clientWidth || 200;
+        canvas.height = canvas.offsetHeight || canvas.clientHeight || 200;
+        
+        // Remove canvas dimensions log
+        
+        // Only create particles if canvas has valid dimensions
+        if (canvas.width > 0 && canvas.height > 0) {
+            // REDUCED: number of particles from 80 to 25
+            const particles = Array.from({ length: 45 }, () => {
+                // Larger random sized particles
+                const radius = Math.random() * 2 + 1;
+                return {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: radius,
+                    // REDUCED: particle speed for less CPU usage
+                    speed: Math.random() * 0.3 + 0.05,
+                    angle: Math.random() * 2 * Math.PI,
+                    opacity: Math.random() * 0.35 + 0.15,
+                    // SIMPLIFIED: removed animation parameters for opacity
+                };
+            });
+            
+            // Using a slower animation frame rate (less frequent updates)
+            let lastFrame = 0;
+            const frameInterval = 50; // Only update every 50ms (instead of every frame)
+            
+            function drawParticles(timestamp) {
+                // Only update if enough time has passed
+                if (!lastFrame || timestamp - lastFrame > frameInterval) {
+                    lastFrame = timestamp;
+                    
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (const p of particles) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(0,255,255,${p.opacity})`;
+                        ctx.fill();
+                        p.x += Math.cos(p.angle) * p.speed;
+                        p.y += Math.sin(p.angle) * p.speed;
+                        
+                        if (p.x < 0) p.x = canvas.width;
+                        if (p.x > canvas.width) p.x = 0;
+                        if (p.y < 0) p.y = canvas.height;
+                        if (p.y > canvas.height) p.y = 0;
+                    }
+                }
+                requestAnimationFrame(drawParticles);
+            }
+            
+            requestAnimationFrame(drawParticles);
+            // Remove animation started log
+        } else {
+            console.warn("Canvas has invalid dimensions");
+        }
+    } else {
+        console.warn("Particle canvas element not found");
+    }
+}
+
+// Add a function to update the progress glow dot position
+function updateProgressDot() {
+    const progressFill = document.querySelector('.progress-fill');
+    const progressDot = document.querySelector('.progress-glow-dot');
+    
+    if (progressFill && progressDot) {
+        // Get the current width from the style attribute
+        const widthStr = progressFill.style.width || '0%';
+        const widthValue = parseFloat(widthStr);
+        
+        // Position the dot at the end of the fill bar, adjusted for the dot's radius
+        progressDot.style.left = `calc(${widthValue}% - 6px)`;
+    }
 }
