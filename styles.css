@@ -822,3 +822,19 @@ body[data-final-results="true"] .graph-placeholder {
     box-shadow: none !important;
     height: 320px !important;
 }
+
+/* Additional styles for boot sequence integration */
+.hidden {
+    display: none !important;
+}
+
+/* For the boot sequence overlay */
+.boot-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: radial-gradient(circle at bottom, #02121f 30%, #000000 100%);
+}

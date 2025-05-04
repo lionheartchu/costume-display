@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Information Costume Display</title>
+    <title>Costume Display</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="wake.css">
     <link rel="stylesheet" href="styles.css">
-    <!-- Remove the old Firebase scripts -->
 </head>
 <body>
-    <div class="main-container">
+    <!-- Boot sequence overlay -->
+    <div class="boot-overlay overlay">
+        <div class="wake-container">
+            <div id="boot-text" class="boot-text"></div>
+        </div>
+    </div>
+
+    <!-- Main content - initially hidden -->
+    <div class="main-container hidden">
         <canvas id="particleCanvas" class="graph-canvas"></canvas>
         <!-- Left Side: Body Display with Costumes -->
         <div class="costume-display">
@@ -94,6 +103,7 @@
         window.onChildAdded = onChildAdded;
         window.onValue = onValue;
     </script>
+    <script src="wake.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

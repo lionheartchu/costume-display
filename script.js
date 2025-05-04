@@ -564,7 +564,8 @@ const value = 84.7;
 document.querySelector('.progress-fill').style.width = `${value}%`;
 updateProgressDot();
 
-// Call both fixes when the document loads
+// Make functions globally available for the boot sequence
+// This should be at the bottom of the file
 document.addEventListener('DOMContentLoaded', function() {
     // Keep COSTUME SITE LOADED log for important init confirmation
     console.log("COSTUME SITE LOADED - APPLYING FIXES");
@@ -593,6 +594,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Start observing the progress fill for attribute changes
         observer.observe(progressFill, { attributes: true });
     }
+    
+    // Make functions available globally for the boot sequence
+    window.initializeParticleCanvas = initializeParticleCanvas;
+    window.fixCostumeDisplay = fixCostumeDisplay;
+    window.updateProgressDot = updateProgressDot;
 });
 
 // Enhanced function to display final survey results with simplified output
@@ -1058,22 +1064,21 @@ function playRevealEffect(callback) {
                 background: linear-gradient(
                     90deg,
                     transparent,
-                    rgba(0, 255, 255, 0.1),
-                    rgba(255, 255, 255, 0.3),
-                    rgba(0, 255, 255, 0.1),
+                    rgba(0, 255, 255, 0.2),
+                    rgba(255, 255, 255, 0.35),
+                    rgba(0, 255, 255, 0.2),
                     transparent
                 );
-                opacity: 0.3;
-                animation: scanPulseMove 3.5s linear;
+                opacity: 0.4;
+                animation: scanPulseMove 3.5s linear infinite;
                 pointer-events: none;
                 z-index: 6;
             }
             
             @keyframes scanPulseMove {
-    0% { left: -35%; }
-    100% { left: 35%; }
-}
-
+                0% { left: -35%; }
+                100% { left: 35%; }
+            }
         `;
         document.head.appendChild(scanPulseStyles);
     }
@@ -1249,3 +1254,15 @@ function updateProgressDot() {
         progressDot.style.left = `calc(${widthValue}% - 6px)`;
     }
 }
+
+// Make these functions available globally for the boot sequence
+window.initializeParticleCanvas = initializeParticleCanvas;
+window.fixCostumeDisplay = fixCostumeDisplay;
+window.updateProgressDot = updateProgressDot;
+
+// Add a helper function to manually trigger the boot sequence from console for testing
+window.manuallyTriggerBoot = function() {
+  if (typeof window.triggerBootSequence === 'function') {
+    window.triggerBootSequence();
+  }
+};
