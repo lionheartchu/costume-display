@@ -12,6 +12,7 @@ const delayBetweenLines = 700;
 const bootText = document.getElementById("boot-text");
 
 let lineIndex = 0;
+let messageReceived = false; // Track if we received a message
 
 function typeLine(line, cb) {
   let i = 0;
@@ -78,9 +79,21 @@ window.onload = function() {
   console.log("Boot sequence initialized - waiting for trigger message");
   typeLine(firstLine, null);
   
+  // Auto-start when accessed directly (after a delay)
+  const autoStartDelay = 5000; // 5 seconds
+  const autoStartTimer = setTimeout(() => {
+    if (!messageReceived) {
+      console.log("No message received - auto-starting boot sequence");
+      lineIndex = 0;
+      continueBootSequence();
+    }
+  }, autoStartDelay);
+  
   // Debug function to manually trigger from console
   window.manualTrigger = function() {
     console.log("Manual trigger activated");
+    messageReceived = true;
+    clearTimeout(autoStartTimer);
     lineIndex = 0;
     continueBootSequence();
   };
@@ -100,6 +113,8 @@ window.onload = function() {
       if (event.data && (event.data.action === 'initializeClicked' || event.data.type === 'initialize')) {
         console.log('Valid initialization message received - starting boot sequence');
         // Start the rest of the boot sequence
+        messageReceived = true;
+        clearTimeout(autoStartTimer);
         lineIndex = 0;
         continueBootSequence();
       } else {
@@ -114,10 +129,25 @@ window.onload = function() {
   window.addEventListener('message', function(event) {
     if (event.data && (event.data.action === 'initializeClicked' || event.data.type === 'initialize')) {
       console.log('Received initialization without origin check - starting boot sequence');
+      messageReceived = true;
+      clearTimeout(autoStartTimer);
       lineIndex = 0;
       continueBootSequence();
     }
   });
+  
+  // Check if this was opened directly (not through a link/iframe)
+  // URL parameter can be used to force auto-start
+  if (window.location.search.includes('autostart=true')) {
+    console.log("Autostart parameter detected - will start boot sequence immediately");
+    messageReceived = true;
+    clearTimeout(autoStartTimer);
+    // Small delay to ensure everything is initialized
+    setTimeout(() => {
+      lineIndex = 0;
+      continueBootSequence();
+    }, 1000);
+  }
 };
 
 // For local testing, you can expose a function to manually trigger the sequence
