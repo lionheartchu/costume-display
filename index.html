@@ -10,13 +10,19 @@
 </head>
 <body>
     <!-- Boot sequence overlay -->
-    <div class="boot-overlay overlay">
-        <div class="wake-container">
-            <div id="boot-text" class="boot-text"></div>
-        </div>
+    <div class="wake-container">
+        <div id="boot-text" class="boot-text">Drifting...</div>
     </div>
+    
+    <canvas id="bubbleCanvas"></canvas>
 
-    <!-- Main content - initially hidden -->
+    <div class="hud-container" style="display: none;">
+        <div class="hud-panel">
+          <div class="hud-title">Message incoming from Dr.A…</div>
+        </div>
+      </div>
+       
+
     <div class="main-container hidden">
         <canvas id="particleCanvas" class="graph-canvas"></canvas>
         <!-- Left Side: Body Display with Costumes -->
@@ -47,12 +53,14 @@
                         </div>
 
                         <!-- Section 2: Graph -->
-                        <div class="panel-section graph-section focal-graph">
-                            <div class="graph-placeholder">
-                                <p style="color:silver;">Waiting for data...</p>
-                                <!-- Any other graph content goes here -->
+                        <div class="panel-section">
+                            <div class="graph-section focal-graph">
+                                <div class="graph-placeholder">
+                                    <p style="color:silver;">Waiting for data...</p>
+                                    <!-- Any other graph content goes here -->
+                                </div>
+                                <p class="small-description emphasis-description">Your "Data Skin" garment will be displayed here.</p>
                             </div>
-                            <p class="small-description emphasis-description">Your "Data Skin" garment will be displayed here.</p>
                         </div>
 
                         <!-- Section 3: Results -->
@@ -79,7 +87,7 @@
     <script type="module">
         // Import Firebase functions
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-        import { getDatabase, ref, onChildAdded, onValue } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js';
+        import { getDatabase, ref, onChildAdded, onValue, get, child, set } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js';
 
         // Your Firebase configuration
         const firebaseConfig = {
@@ -102,7 +110,11 @@
         window.databaseRef = ref;
         window.onChildAdded = onChildAdded;
         window.onValue = onValue;
+        window.get = get;
+        window.child = child;
+
     </script>
+
     <script src="wake.js"></script>
     <script src="script.js"></script>
 </body>

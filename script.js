@@ -332,69 +332,82 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to initialize and animate the particle canvas
 function initializeParticleCanvas() {
-    const canvas = document.getElementById('particleCanvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        
-        // Make sure canvas dimensions match its display size
-        canvas.width = canvas.offsetWidth || canvas.clientWidth || 200;
-        canvas.height = canvas.offsetHeight || canvas.clientHeight || 200;
-        
-        // Remove canvas dimensions log
-        
-        // Only create particles if canvas has valid dimensions
-        if (canvas.width > 0 && canvas.height > 0) {
-            // REDUCED: number of particles from 80 to 25
-            const particles = Array.from({ length: 25 }, () => {
-                // Larger random sized particles
-                const radius = Math.random() * 2 + 1;
-                return {
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: radius,
-                    // REDUCED: particle speed for less CPU usage
-                    speed: Math.random() * 0.3 + 0.05,
-                    angle: Math.random() * 2 * Math.PI,
-                    opacity: Math.random() * 0.35 + 0.15,
-                    // SIMPLIFIED: removed animation parameters for opacity
-                };
-            });
-            
-            // Using a slower animation frame rate (less frequent updates)
-            let lastFrame = 0;
-            const frameInterval = 50; // Only update every 50ms (instead of every frame)
-            
-            function drawParticles(timestamp) {
-                // Only update if enough time has passed
-                if (!lastFrame || timestamp - lastFrame > frameInterval) {
-                    lastFrame = timestamp;
-                    
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    for (const p of particles) {
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(0,255,255,${p.opacity})`;
-                        ctx.fill();
-                        p.x += Math.cos(p.angle) * p.speed;
-                        p.y += Math.sin(p.angle) * p.speed;
-                        
-                        if (p.x < 0) p.x = canvas.width;
-                        if (p.x > canvas.width) p.x = 0;
-                        if (p.y < 0) p.y = canvas.height;
-                        if (p.y > canvas.height) p.y = 0;
-                    }
-                }
-                requestAnimationFrame(drawParticles);
-            }
-            
-            requestAnimationFrame(drawParticles);
-            // Remove animation started log
-        } else {
-            console.warn("Canvas has invalid dimensions");
-        }
-    } else {
-        console.warn("Particle canvas element not found");
+    console.log("🔄 Initializing particle canvas");
+    
+    // Stop any existing animation
+    if (window.particleAnimationFrame) {
+        cancelAnimationFrame(window.particleAnimationFrame);
+        window.particleAnimationFrame = null;
     }
+    
+    const canvas = document.getElementById('particleCanvas');
+    if (!canvas) {
+        console.error("❌ particleCanvas not found");
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.error("❌ Could not get canvas context");
+        return;
+    }
+    
+    // Simple sizing that works reliably
+    canvas.width = canvas.offsetWidth || canvas.clientWidth || window.innerWidth;
+    canvas.height = canvas.offsetHeight || canvas.clientHeight || window.innerHeight;
+    
+    console.log("📏 Canvas size set to:", canvas.width, "×", canvas.height);
+    
+    // Only proceed if we have valid dimensions
+    if (canvas.width <= 0 || canvas.height <= 0) {
+        console.error("❌ Invalid canvas dimensions:", canvas.width, "×", canvas.height);
+        return;
+    }
+    
+    // Create new particles
+    const particles = Array.from({ length: 25 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 2 + 1,
+        speed: Math.random() * 0.3 + 0.05,
+        angle: Math.random() * 2 * Math.PI,
+        opacity: Math.random() * 0.35 + 0.15
+    }));
+    
+    // Animation loop
+    let lastFrame = 0;
+    const frameInterval = 50; // Update every 50ms for better performance
+    
+    function drawParticles(timestamp) {
+        if (!lastFrame || timestamp - lastFrame > frameInterval) {
+            lastFrame = timestamp;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (const p of particles) {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0,255,255,${p.opacity})`;
+                ctx.fill();
+                
+                // Update position
+                p.x += Math.cos(p.angle) * p.speed;
+                p.y += Math.sin(p.angle) * p.speed;
+                
+                // Wrap around edges
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+            }
+        }
+        
+        window.particleAnimationFrame = requestAnimationFrame(drawParticles);
+    }
+    
+    // Start animation
+    window.particleAnimationFrame = requestAnimationFrame(drawParticles);
+    console.log("✅ Particle animation started");
 }
 
 // Update the panel UI function with more friendly descriptions
@@ -855,7 +868,7 @@ function displayFinalResults(surveyResults, sessionId) {
         
         /* Move final results down and add margin from panel-section */
         body[data-final-results="true"] .graph-placeholder {
-            margin-top: 30px !important;
+            margin-top: 10px !important;
             border: none !important;
             background: none !important;
             box-shadow: none !important;
@@ -863,7 +876,7 @@ function displayFinalResults(surveyResults, sessionId) {
         
         /* Add margin between final results and the next panel section */
         body[data-final-results="true"] .graph-section {
-            margin-bottom: 80px !important;
+            margin-bottom: 0px !important;
         }
         
         /* Add more space before the final panel section */
@@ -948,6 +961,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function resetCostumeDisplay() {
     console.log("🔁 Resetting display to clean state...");
+
+    // // Hide main-container when resetting for a new session
+    // const mainContainer = document.querySelector(".main-container");
+    // if (mainContainer) {
+    //     mainContainer.classList.add("hidden");
+    //     mainContainer.style.opacity = "0";
+    // }
+
+    // Remove body-lab image if it exists
+    const labImg = document.getElementById("body-lab-image");
+    if (labImg) {
+        labImg.style.opacity = "0";
+        setTimeout(() => {
+            if (labImg.parentNode) {
+                labImg.parentNode.removeChild(labImg);
+            }
+        }, 400);
+    }
+
+    // // Reset wake state
+    // const wakeContainer = document.querySelector(".wake-container");
+    // if (wakeContainer) {
+    //     wakeContainer.style.display = "block";
+    //     wakeContainer.style.opacity = "1";
+    // }
+
+    // Reset HUD container
+    const hudContainer = document.querySelector(".hud-container");
+    if (hudContainer) {
+        hudContainer.style.display = "none";
+        hudContainer.style.opacity = "0";
+    }
+
+    // Remove lab background
+    document.body.classList.remove("lab-bg");
 
     // 移除 final result 状态和样式
     const graphPlaceholder = document.querySelector('.graph-placeholder');
@@ -1172,73 +1220,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize particle canvas animation
     initializeParticleCanvas();
 });
-
-// Function to initialize and animate the particle canvas
-function initializeParticleCanvas() {
-    const canvas = document.getElementById('particleCanvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        
-        // Make sure canvas dimensions match its display size
-        canvas.width = canvas.offsetWidth || canvas.clientWidth || 200;
-        canvas.height = canvas.offsetHeight || canvas.clientHeight || 200;
-        
-        // Remove canvas dimensions log
-        
-        // Only create particles if canvas has valid dimensions
-        if (canvas.width > 0 && canvas.height > 0) {
-            // REDUCED: number of particles from 80 to 25
-            const particles = Array.from({ length: 45 }, () => {
-                // Larger random sized particles
-                const radius = Math.random() * 2 + 1;
-                return {
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: radius,
-                    // REDUCED: particle speed for less CPU usage
-                    speed: Math.random() * 0.3 + 0.05,
-                    angle: Math.random() * 2 * Math.PI,
-                    opacity: Math.random() * 0.35 + 0.15,
-                    // SIMPLIFIED: removed animation parameters for opacity
-                };
-            });
-            
-            // Using a slower animation frame rate (less frequent updates)
-            let lastFrame = 0;
-            const frameInterval = 50; // Only update every 50ms (instead of every frame)
-            
-            function drawParticles(timestamp) {
-                // Only update if enough time has passed
-                if (!lastFrame || timestamp - lastFrame > frameInterval) {
-                    lastFrame = timestamp;
-                    
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    for (const p of particles) {
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(0,255,255,${p.opacity})`;
-                        ctx.fill();
-                        p.x += Math.cos(p.angle) * p.speed;
-                        p.y += Math.sin(p.angle) * p.speed;
-                        
-                        if (p.x < 0) p.x = canvas.width;
-                        if (p.x > canvas.width) p.x = 0;
-                        if (p.y < 0) p.y = canvas.height;
-                        if (p.y > canvas.height) p.y = 0;
-                    }
-                }
-                requestAnimationFrame(drawParticles);
-            }
-            
-            requestAnimationFrame(drawParticles);
-            // Remove animation started log
-        } else {
-            console.warn("Canvas has invalid dimensions");
-        }
-    } else {
-        console.warn("Particle canvas element not found");
-    }
-}
 
 // Add a function to update the progress glow dot position
 function updateProgressDot() {
